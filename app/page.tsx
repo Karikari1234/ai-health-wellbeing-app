@@ -17,6 +17,7 @@ import DashboardTabs from "./components/DashboardTabs";
 import Stats from "./components/Stats";
 import EmptyState from "./components/EmptyState";
 import EditEntryModal from "./components/EditEntryModal";
+import InstallPrompt from "./components/InstallPrompt";
 
 export default function Home() {
   const [user, setUser] = useState<any>(null);
@@ -214,6 +215,8 @@ export default function Home() {
           onSubmit={handleUpdateEntry}
         />
       )}
+
+      {user && <InstallPrompt />}
     </div>
   );
 }
