@@ -48,6 +48,25 @@ export async function getPaginatedWeightEntries(
 export async function addWeightEntry(entry: WeightFormData, userId: string) {
   const formattedDate = format(entry.date, "yyyy-MM-dd");
 
+  // First, check if an entry already exists for this date
+  const { data: existingEntries, error: fetchError } = await supabase
+    .from("weight_entries")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("date", formattedDate);
+
+  if (fetchError) {
+    console.error("Error checking for existing entries:", fetchError);
+    throw fetchError;
+  }
+
+  // If an entry already exists for this date, update it instead of creating a new one
+  if (existingEntries && existingEntries.length > 0) {
+    const existingEntry = existingEntries[0];
+    return updateWeightEntry(existingEntry.id, entry);
+  }
+
+  // Otherwise, create a new entry
   const { data, error } = await supabase
     .from("weight_entries")
     .insert([

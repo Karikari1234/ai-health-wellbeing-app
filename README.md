@@ -22,6 +22,7 @@ A Progressive Web App (PWA) for tracking weight and visualizing progress over ti
 - [Authentication Flow](#authentication-flow)
 - [State Management](#state-management)
 - [Performance Features](#performance-features)
+- [User Experience Improvements](#user-experience-improvements)
 - [Common Tasks](#common-tasks)
 - [Troubleshooting](#troubleshooting)
 - [Future Enhancements](#future-enhancements)
@@ -151,6 +152,7 @@ Users can:
 - Edit existing entries
 - Delete entries
 - View calculated statistics
+- Entries are unique per date - adding a weight for an existing date updates the previous entry
 
 Key files:
 - `app/lib/db.ts` - Database operations for weight entries
@@ -193,6 +195,8 @@ Form for:
 - Editing existing entries
 - Date selection via DatePicker
 - Form validation with React Hook Form
+- Detects and shows notification when updating existing entries
+- Auto-scrolls to the form when adding new entries
 
 ### Dashboard Tabs (`app/components/DashboardTabs.tsx`)
 
@@ -204,8 +208,8 @@ Toggles between:
 
 Calculates and displays:
 - Current weight
-- 30-day weight change
-- Total change since first entry
+- 30-day weight change (based on averaging periods for stability)
+- Total change (uses 3-month or earliest weight as baseline if available)
 - Average weight
 
 ### Weight Chart (`app/components/WeightChart.tsx`)
@@ -266,6 +270,17 @@ The app includes several performance optimizations:
 - Data point sampling for large datasets to maintain performance
 - Dynamic scaling of chart display based on data density
 - Uses separate optimized dataset for visualization
+
+## User Experience Improvements
+
+- Responsive mobile-friendly design for authentication forms
+- Auto-scrolling to entry form when adding new weights
+- Intelligent date handling preventing duplicate entries
+- Visual feedback when updating existing entries
+- Confirmation dialogs when actions would affect existing data
+- Optimized input fields and buttons for mobile devices
+- Improved 30-day change calculation based on averaging periods for more stable metrics
+- Unique entries per date to maintain data integrity
 
 ## Common Tasks
 

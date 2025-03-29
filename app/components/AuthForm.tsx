@@ -92,15 +92,15 @@ export default function AuthForm() {
   // Password reset success view
   if (resetEmailSent) {
     return (
-      <div className="app-card p-8 text-center">
-        <div className="bg-primary-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+      <div className="text-center">
+        <div className="bg-primary-50 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-5">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="w-8 h-8 text-primary-500"
+            className="w-7 h-7 text-primary-500"
           >
             <path
               strokeLinecap="round"
@@ -109,8 +109,8 @@ export default function AuthForm() {
             />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold mb-3 font-merriweather">Check your email</h2>
-        <p className="mb-6 text-gray-600 font-karla">
+        <h2 className="text-xl font-bold mb-2 font-merriweather">Check your email</h2>
+        <p className="mb-5 text-gray-600 font-karla text-sm">
           We&apos;ve sent password reset instructions to {email}
         </p>
         <button
@@ -118,7 +118,7 @@ export default function AuthForm() {
             setIsForgotPassword(false);
             setResetEmailSent(false);
           }}
-          className="text-primary-500 hover:text-primary-600 font-medium"
+          className="text-primary-500 hover:text-primary-600 font-medium text-sm"
         >
           Back to sign in
         </button>
@@ -129,18 +129,18 @@ export default function AuthForm() {
   // Forgot password view
   if (isForgotPassword) {
     return (
-      <div className="app-card p-8">
-        <h2 className="text-2xl font-bold text-center mb-6 font-merriweather">Reset Password</h2>
+      <div>
+        <h2 className="text-xl font-bold text-center mb-4 font-merriweather">Reset Password</h2>
 
         {error && (
-          <div className="mb-5 p-4 bg-red-50 text-primary-500 rounded-xl text-sm font-karla">
+          <div className="mb-4 p-3 bg-red-50 text-primary-500 rounded-lg text-sm font-karla">
             {error}
           </div>
         )}
 
         <form onSubmit={handlePasswordReset}>
-          <div className="mb-5">
-            <label htmlFor="email" className="block text-sm font-medium mb-2 font-karla text-gray-700">
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-sm font-medium mb-1.5 font-karla text-gray-700">
               Email
             </label>
             <input
@@ -149,20 +149,20 @@ export default function AuthForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500"
+              className="w-full p-2.5 border border-gray-200 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="app-button w-full"
+            className="app-button w-full py-2.5"
           >
             {loading ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
 
-        <div className="mt-5 text-center">
+        <div className="mt-4 text-center">
           <button
             onClick={() => setIsForgotPassword(false)}
             className="text-primary-500 hover:text-primary-600 text-sm font-medium"
@@ -176,16 +176,16 @@ export default function AuthForm() {
 
   // Sign in / Sign up view
   return (
-    <div className="app-card p-8">
-      <h2 className="text-2xl font-bold text-center mb-6 font-merriweather">
+    <div>
+      <h2 className="text-xl font-bold text-center mb-4 font-merriweather">
         {isSignUp ? "Create Account" : "Sign In"}
       </h2>
 
       {error && (
-        <div className="mb-5 p-4 bg-red-50 text-primary-500 rounded-xl text-sm font-karla">
+        <div className="mb-4 p-3 bg-red-50 text-primary-500 rounded-lg text-sm font-karla">
           {error}
           {error.includes("configuration") && (
-            <div className="mt-2">
+            <div className="mt-1.5">
               <button 
                 onClick={goToDiagnostic}
                 className="underline font-medium"
@@ -198,8 +198,8 @@ export default function AuthForm() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="mb-5">
-          <label htmlFor="email" className="block text-sm font-medium mb-2 font-karla text-gray-700">
+        <div className="mb-4">
+          <label htmlFor="email" className="block text-sm font-medium mb-1.5 font-karla text-gray-700">
             Email
           </label>
           <input
@@ -208,12 +208,12 @@ export default function AuthForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500"
+            className="w-full p-2.5 border border-gray-200 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500"
           />
         </div>
 
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-sm font-medium mb-2 font-karla text-gray-700">
+        <div className="mb-5">
+          <label htmlFor="password" className="block text-sm font-medium mb-1.5 font-karla text-gray-700">
             Password
           </label>
           <input
@@ -223,7 +223,7 @@ export default function AuthForm() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500"
+            className="w-full p-2.5 border border-gray-200 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500"
           />
           {isSignUp && <PasswordRequirements password={password} />}
         </div>
@@ -231,13 +231,13 @@ export default function AuthForm() {
         <button
           type="submit"
           disabled={loading}
-          className="app-button w-full"
+          className="app-button w-full py-2.5"
         >
           {loading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
         </button>
       </form>
 
-      <div className="mt-5 text-center space-y-3">
+      <div className="mt-4 text-center space-y-2">
         <button
           onClick={() => setIsSignUp(!isSignUp)}
           className="text-primary-500 hover:text-primary-600 text-sm block w-full font-medium"

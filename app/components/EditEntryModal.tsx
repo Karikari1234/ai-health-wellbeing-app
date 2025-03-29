@@ -2,23 +2,56 @@
 
 import { WeightEntry, WeightFormData } from "../lib/types";
 import WeightForm from "./WeightForm";
-import { parseISO } from "date-fns";
+import { parseISO, format } from "date-fns";
 
 interface EditEntryModalProps {
   entry: WeightEntry | null;
   onClose: () => void;
   onSubmit: (id: string, data: WeightFormData) => Promise<void>;
+  entries: WeightEntry[];
 }
 
 export default function EditEntryModal({
   entry,
   onClose,
   onSubmit,
+  entries,
 }: EditEntryModalProps) {
   if (!entry) return null;
 
   const handleSubmit = async (data: WeightFormData) => {
-    await onSubmit(entry.id, data);
+    if (!entry) return;
+    
+    // Check if the date is changed and there's already an entry for the new date
+    const formattedNewDate = format(data.date, "yyyy-MM-dd");
+    const formattedCurrentDate = entry.date;
+    
+    if (formattedNewDate !== formattedCurrentDate) {
+      // Date has changed - check if there's an existing entry for the new date
+      const existingEntry = entries.find(e => 
+        e.date === formattedNewDate && e.id !== entry.id
+      );
+      
+      if (existingEntry) {
+        // Ask for confirmation to overwrite
+        if (!confirm(
+          `There's already an entry for ${format(data.date, "MMMM d, yyyy")} ` +
+          `with weight ${existingEntry.weight} kg. Do you want to overwrite it?`
+        )) {
+          return; // User canceled the operation
+        }
+        
+        // User confirmed, so delete the existing entry for that date and update this one
+        await onSubmit(entry.id, data);
+      } else {
+        // No conflict, just update
+        await onSubmit(entry.id, data);
+      }
+    } else {
+      // Date hasn't changed, just update the entry
+      await onSubmit(entry.id, data);
+    }
+    
     onClose();
   };
 
@@ -56,6 +89,7 @@ export default function EditEntryModal({
               date: parseISO(entry.date),
             }}
             buttonText="Update Entry"
+            entries={entries.filter(e => e.id !== entry.id)} // Exclude current entry
           />
         </div>
       </div>

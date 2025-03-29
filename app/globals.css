@@ -15,7 +15,7 @@ body {
 
 /* Card styling */
 .app-card {
-  @apply bg-white rounded-xl shadow-card transition-all duration-200;
+  @apply bg-white rounded-lg sm:rounded-xl shadow-card transition-all duration-200;
 }
 
 .app-card:hover {
@@ -38,9 +38,9 @@ body {
 
 /* Button styling */
 .app-button {
-  @apply bg-primary-500 text-white font-medium py-3 px-6 rounded-full 
+  @apply bg-primary-500 text-white font-medium py-2.5 sm:py-3 px-5 sm:px-6 rounded-xl sm:rounded-full 
          shadow-md hover:bg-primary-600 transition-all duration-200 
-         flex items-center justify-center;
+         flex items-center justify-center text-sm sm:text-base;
 }
 
 .datepicker-container .react-datepicker-wrapper {

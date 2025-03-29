@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 import { getUser } from "./lib/auth";
 import {
   getWeightEntries,
@@ -33,6 +34,19 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const ENTRIES_PER_PAGE = 10;
+
+  // Handle showing add form with auto-scroll
+  const handleShowAddForm = () => {
+    setShowAddForm(true);
+    // Use setTimeout to ensure the form is rendered before scrolling
+    setTimeout(() => {
+      // Find the add form element and scroll to it
+      const addFormElement = document.getElementById('add-weight-form');
+      if (addFormElement) {
+        addFormElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
 
   // Check auth status and load data
   useEffect(() => {
@@ -174,15 +188,49 @@ export default function Home() {
     if (!user) return;
 
     try {
-      const newEntry = await addWeightEntry(data, user.id);
-      // Update both states
-      setEntries(prevEntries => [newEntry, ...prevEntries]);
-      setAllEntries(prevEntries => [...prevEntries, newEntry]);
-      setTotalEntryCount(prevCount => prevCount + 1);
+      const formattedDate = format(data.date, "yyyy-MM-dd");
+      
+      // Check if there's already an entry with this date in our state
+      const existingEntryIndex = entries.findIndex(
+        entry => entry.date === formattedDate
+      );
+      
+      const existingAllEntriesIndex = allEntries.findIndex(
+        entry => entry.date === formattedDate
+      );
+      
+      // Call the API which will handle creating or updating as needed
+      const resultEntry = await addWeightEntry(data, user.id);
+      
+      // Update the UI based on whether it's a new entry or an update
+      if (existingEntryIndex >= 0) {
+        // This is an update to an existing entry in the paginated entries
+        setEntries(prevEntries => 
+          prevEntries.map((entry) => (
+            entry.date === formattedDate ? resultEntry : entry
+          ))
+        );
+      } else {
+        // This is a new entry for the paginated entries
+        setEntries(prevEntries => [resultEntry, ...prevEntries]);
+        setTotalEntryCount(prevCount => prevCount + 1);
+      }
+      
+      // Similarly update the allEntries state
+      if (existingAllEntriesIndex >= 0) {
+        setAllEntries(prevEntries => 
+          prevEntries.map((entry) => (
+            entry.date === formattedDate ? resultEntry : entry
+          ))
+        );
+      } else {
+        setAllEntries(prevEntries => [...prevEntries, resultEntry]);
+      }
+      
       setShowAddForm(false);
     } catch (error) {
-      console.error("Error adding entry:", error);
-      alert("Failed to add entry. Please try again.");
+      console.error("Error adding/updating entry:", error);
+      alert("Failed to save entry. Please try again.");
     }
   };
 
@@ -264,17 +312,19 @@ export default function Home() {
   if (!user) {
     return (
       <div className="bg-appBg min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full app-card p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 font-merriweather">
+        <div className="max-w-md w-full">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 font-merriweather">
               Weight Tracker
             </h1>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-gray-600 text-sm sm:text-base">
               Sign in to track and monitor your weight over time
             </p>
           </div>
 
-          <AuthForm />
+          <div className="app-card p-5 sm:p-6">
+            <AuthForm />
+          </div>
         </div>
       </div>
     );
@@ -308,7 +358,7 @@ export default function Home() {
           )}
 
           {showAddForm ? (
-            <div className="app-card p-6 mt-6">
+            <div className="app-card p-6 mt-6" id="add-weight-form">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-medium font-karla">Add Weight Entry</h2>
                 <button
@@ -331,12 +381,12 @@ export default function Home() {
                   </svg>
                 </button>
               </div>
-              <WeightForm onSubmit={handleAddEntry} />
+              <WeightForm onSubmit={handleAddEntry} entries={allEntries} />
             </div>
           ) : (
             <div className="flex justify-center mt-6">
               <button
-                onClick={() => setShowAddForm(true)}
+                onClick={handleShowAddForm}
                 className="app-button"
               >
                 <svg
@@ -365,6 +415,7 @@ export default function Home() {
           entry={entryToEdit}
           onClose={() => setEntryToEdit(null)}
           onSubmit={handleUpdateEntry}
+          entries={allEntries}
         />
       )}
 

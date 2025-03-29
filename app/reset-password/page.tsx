@@ -66,17 +66,17 @@ export default function ResetPasswordPage() {
   if (success) {
     return (
       <div className="min-h-screen bg-appBg flex items-center justify-center p-4">
-        <div className="max-w-md w-full mx-auto p-8 bg-white rounded-2xl shadow-card text-center">
-          <div className="bg-green-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-green-500">
+        <div className="max-w-md w-full mx-auto p-6 bg-white rounded-xl shadow-card text-center">
+          <div className="bg-green-50 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7 text-green-500">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold mb-3 font-merriweather">Password Updated!</h2>
-          <p className="mb-4 text-gray-600 font-karla">
+          <h2 className="text-xl font-bold mb-2 font-merriweather">Password Updated!</h2>
+          <p className="mb-3 text-gray-600 font-karla text-sm">
             Your password has been successfully reset.
           </p>
-          <p className="text-sm text-gray-500 font-karla">
+          <p className="text-xs text-gray-500 font-karla">
             Redirecting to login page...
           </p>
         </div>
@@ -87,27 +87,27 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-appBg flex items-center justify-center p-4">
       <div className="max-w-md w-full mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 font-merriweather">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 font-merriweather">
             Weight Tracker
           </h1>
-          <p className="mt-2 text-gray-600 font-karla">
+          <p className="mt-1 text-gray-600 font-karla text-sm sm:text-base">
             Set a new password for your account
           </p>
         </div>
 
-        <div className="app-card p-8">
-          <h2 className="text-2xl font-bold text-center mb-6 font-merriweather">Reset Password</h2>
+        <div className="app-card p-5 sm:p-6">
+          <h2 className="text-xl font-bold text-center mb-4 font-merriweather">Reset Password</h2>
 
           {error && (
-            <div className="mb-4 p-4 bg-red-50 text-primary-500 rounded-xl text-sm font-karla">
+            <div className="mb-4 p-3 bg-red-50 text-primary-500 rounded-lg text-sm font-karla">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
-            <div className="mb-5">
-              <label htmlFor="password" className="block text-sm font-medium mb-2 font-karla text-gray-700">
+            <div className="mb-4">
+              <label htmlFor="password" className="block text-sm font-medium mb-1.5 font-karla text-gray-700">
                 New Password
               </label>
               <input
@@ -117,13 +117,13 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                className="w-full p-2.5 border border-gray-200 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500"
               />
               <PasswordRequirements password={password} />
             </div>
 
-            <div className="mb-6">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2 font-karla text-gray-700">
+            <div className="mb-5">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1.5 font-karla text-gray-700">
                 Confirm Password
               </label>
               <input
@@ -133,14 +133,14 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                className="w-full p-2.5 border border-gray-200 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="app-button w-full"
+              className="app-button w-full py-2.5"
             >
               {loading ? "Processing..." : "Reset Password"}
             </button>

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useForm, Controller } from "react-hook-form";
-import { WeightFormData } from "../lib/types";
+import { WeightFormData, WeightEntry } from "../lib/types";
+import { format } from "date-fns";
 
 interface WeightFormProps {
   onSubmit: (data: WeightFormData) => Promise<void>;
@@ -13,14 +14,18 @@ interface WeightFormProps {
     date: Date;
   };
   buttonText?: string;
+  entries?: WeightEntry[];
 }
 
 export default function WeightForm({
   onSubmit,
   initialData,
   buttonText = "Submit",
+  entries = [],
 }: WeightFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [existingEntryDate, setExistingEntryDate] = useState<Date | null>(null);
+  const [existingEntryWeight, setExistingEntryWeight] = useState<number | null>(null);
 
   const {
     control,
@@ -37,6 +42,18 @@ export default function WeightForm({
   const onFormSubmit = async (data: WeightFormData) => {
     setIsSubmitting(true);
     try {
+      // Check if the date already has an entry
+      const formattedDate = format(data.date, "yyyy-MM-dd");
+      const existingEntry = entries.find(entry => entry.date === formattedDate);
+      
+      if (existingEntry) {
+        setExistingEntryDate(data.date);
+        setExistingEntryWeight(existingEntry.weight);
+      } else {
+        setExistingEntryDate(null);
+        setExistingEntryWeight(null);
+      }
+      
       await onSubmit(data);
     } finally {
       setIsSubmitting(false);
@@ -96,6 +113,13 @@ export default function WeightForm({
       >
         {isSubmitting ? "Submitting..." : buttonText}
       </button>
+      
+      {existingEntryDate && existingEntryWeight && (
+        <div className="mt-3 text-sm text-orange-500 text-center">
+          <p>Note: You already have an entry for {format(existingEntryDate, "MMMM d, yyyy")} 
+          with weight {existingEntryWeight} kg. This entry will be updated.</p>
+        </div>
+      )}
     </form>
   );
 }
