@@ -7,7 +7,14 @@ export async function getUser() {
   return user;
 }
 
-export async function signIn(email: string, password: string) {
+export async function signIn(email: string, password: string, isPasswordReset = false) {
+  if (isPasswordReset) {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    return { data, error };
+  }
+  
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -28,4 +35,12 @@ export async function signUp(email: string, password: string) {
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
   return { error };
+}
+
+export async function updatePassword(password: string) {
+  const { data, error } = await supabase.auth.updateUser({
+    password,
+  });
+  
+  return { data, error };
 }
