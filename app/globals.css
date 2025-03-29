@@ -4,13 +4,43 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
+  --background-rgb: 240, 244, 248; /* Light blue/gray background */
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
   min-height: 100vh;
+}
+
+/* Card styling */
+.app-card {
+  @apply bg-white rounded-xl shadow-card transition-all duration-200;
+}
+
+.app-card:hover {
+  @apply shadow-card-hover;
+}
+
+/* Stats card styling */
+.stat-card {
+  @apply bg-white rounded-xl shadow-card p-5 transition-all duration-200;
+}
+
+.stat-card:hover {
+  @apply shadow-card-hover;
+}
+
+/* Improved chart styling */
+.chart-container canvas {
+  @apply rounded-lg;
+}
+
+/* Button styling */
+.app-button {
+  @apply bg-primary-500 text-white font-medium py-3 px-6 rounded-full 
+         shadow-md hover:bg-primary-600 transition-all duration-200 
+         flex items-center justify-center;
 }
 
 .datepicker-container .react-datepicker-wrapper {
@@ -21,7 +51,7 @@ body {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid #e2e8f0;
-  border-radius: 0.375rem;
+  border-radius: 0.75rem;
 }
 
 /* Fix for Safari iOS bounce effect */

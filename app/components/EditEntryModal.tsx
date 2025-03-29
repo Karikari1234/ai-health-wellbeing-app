@@ -23,10 +23,29 @@ export default function EditEntryModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold font-merriweather">Edit Weight Entry</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full">
+        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+          <h2 className="text-xl font-medium font-karla text-gray-800">Edit Weight Entry</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 rounded-full p-1 hover:bg-gray-100 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
 
         <div className="p-6">
@@ -38,13 +57,6 @@ export default function EditEntryModal({
             }}
             buttonText="Update Entry"
           />
-
-          <button
-            onClick={onClose}
-            className="mt-4 w-full py-2 text-gray-600 hover:text-gray-900 font-medium font-karla"
-          >
-            Cancel
-          </button>
         </div>
       </div>
     </div>

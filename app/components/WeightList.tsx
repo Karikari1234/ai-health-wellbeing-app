@@ -29,31 +29,31 @@ export default function WeightList({
 
   if (!entries.length) {
     return (
-      <div className="text-center p-4 border border-gray-200 rounded-lg">
-        <p className="text-gray-500">No entries yet</p>
+      <div className="text-center p-6 border border-gray-100 rounded-xl bg-gray-50">
+        <p className="text-gray-500 font-karla">No entries yet</p>
       </div>
     );
   }
 
   return (
-    <div className="divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden">
+    <div className="divide-y divide-gray-100 rounded-xl overflow-hidden bg-white">
       {entries
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .map((entry) => (
-          <div key={entry.id} className="bg-white p-4">
+          <div key={entry.id} className="p-4 hover:bg-gray-50 transition-colors duration-150">
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-medium font-merriweather">
+                <p className="font-medium font-merriweather text-gray-800">
                   {format(parseISO(entry.date), "MMMM d, yyyy")}
                 </p>
-                <p className="text-gray-600 font-karla">
+                <p className="text-gray-600 font-karla mt-1">
                   {entry.weight.toFixed(1)} kg
                 </p>
               </div>
-              <div className="flex space-x-2">
+              <div className="flex space-x-3">
                 <button
                   onClick={() => onEdit(entry)}
-                  className="p-2 text-gray-500 hover:text-primary-600 transition-colors"
+                  className="p-2 text-gray-400 hover:text-primary-500 transition-colors rounded-full hover:bg-gray-100"
                   aria-label="Edit entry"
                 >
                   <svg
@@ -74,7 +74,7 @@ export default function WeightList({
                 <button
                   onClick={() => handleDelete(entry.id)}
                   disabled={deletingId === entry.id}
-                  className="p-2 text-gray-500 hover:text-red-600 transition-colors disabled:opacity-50"
+                  className="p-2 text-gray-400 hover:text-primary-500 transition-colors rounded-full hover:bg-gray-100 disabled:opacity-50"
                   aria-label="Delete entry"
                 >
                   <svg

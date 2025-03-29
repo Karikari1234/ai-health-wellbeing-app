@@ -65,16 +65,18 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center p-4">
-        <div className="max-w-md w-full mx-auto p-6 bg-white dark:bg-slate-800 rounded-lg shadow-md text-center">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto text-green-600 mb-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <h2 className="text-2xl font-bold mb-2">Password Updated!</h2>
-          <p className="mb-4 text-gray-600 dark:text-gray-400">
+      <div className="min-h-screen bg-appBg flex items-center justify-center p-4">
+        <div className="max-w-md w-full mx-auto p-8 bg-white rounded-2xl shadow-card text-center">
+          <div className="bg-green-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-green-500">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold mb-3 font-merriweather">Password Updated!</h2>
+          <p className="mb-4 text-gray-600 font-karla">
             Your password has been successfully reset.
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 font-karla">
             Redirecting to login page...
           </p>
         </div>
@@ -83,29 +85,29 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-appBg flex items-center justify-center p-4">
       <div className="max-w-md w-full mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-gray-900 font-merriweather">
             Weight Tracker
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-gray-600 font-karla">
             Set a new password for your account
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold text-center mb-6">Reset Password</h2>
+        <div className="app-card p-8">
+          <h2 className="text-2xl font-bold text-center mb-6 font-merriweather">Reset Password</h2>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+            <div className="mb-4 p-4 bg-red-50 text-primary-500 rounded-xl text-sm font-karla">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="password" className="block text-sm font-medium mb-1">
+            <div className="mb-5">
+              <label htmlFor="password" className="block text-sm font-medium mb-2 font-karla text-gray-700">
                 New Password
               </label>
               <input
@@ -115,13 +117,13 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-slate-700 rounded-md"
+                className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500"
               />
               <PasswordRequirements password={password} />
             </div>
 
             <div className="mb-6">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2 font-karla text-gray-700">
                 Confirm Password
               </label>
               <input
@@ -131,14 +133,14 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-slate-700 rounded-md"
+                className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-4 rounded-md transition duration-200 disabled:opacity-50"
+              className="app-button w-full"
             >
               {loading ? "Processing..." : "Reset Password"}
             </button>

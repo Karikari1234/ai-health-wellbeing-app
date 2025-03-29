@@ -15,23 +15,23 @@ export default function DashboardTabs({ entries, onDelete, onEdit }: DashboardTa
   const [activeTab, setActiveTab] = useState<"chart" | "list">("chart");
 
   return (
-    <div>
-      <div className="flex border-b border-gray-200">
+    <div className="app-card p-6">
+      <div className="flex border-b border-gray-100 mb-6">
         <button
-          className={`py-3 px-4 text-sm font-medium border-b-2 font-merriweather ${
+          className={`py-3 px-6 text-base font-medium border-b-2 font-karla ${
             activeTab === "chart"
-              ? "border-primary-600 text-primary-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
+              ? "border-primary-500 text-primary-500"
+              : "border-transparent text-gray-400 hover:text-gray-600"
           }`}
           onClick={() => setActiveTab("chart")}
         >
           Chart
         </button>
         <button
-          className={`py-3 px-4 text-sm font-medium border-b-2 font-merriweather ${
+          className={`py-3 px-6 text-base font-medium border-b-2 font-karla ${
             activeTab === "list"
-              ? "border-primary-600 text-primary-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
+              ? "border-primary-500 text-primary-500"
+              : "border-transparent text-gray-400 hover:text-gray-600"
           }`}
           onClick={() => setActiveTab("list")}
         >
@@ -39,7 +39,7 @@ export default function DashboardTabs({ entries, onDelete, onEdit }: DashboardTa
         </button>
       </div>
 
-      <div className="mt-4">
+      <div>
         {activeTab === "chart" ? (
           <WeightChart entries={entries} />
         ) : (

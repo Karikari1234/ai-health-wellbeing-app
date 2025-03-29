@@ -44,9 +44,9 @@ export default function WeightForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-5">
       <div>
-        <label htmlFor="weight" className="block text-sm font-medium mb-1 font-karla">
+        <label htmlFor="weight" className="block text-sm font-medium mb-2 font-karla text-gray-700">
           Weight (kg)
         </label>
         <input
@@ -58,16 +58,16 @@ export default function WeightForm({
             min: { value: 20, message: "Weight must be at least 20kg" },
             max: { value: 300, message: "Weight must be less than 300kg" },
           })}
-          className="w-full p-3 border border-gray-300 rounded-md"
+          className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500"
           placeholder="Enter your weight"
         />
         {errors.weight && (
-          <p className="mt-1 text-sm text-red-600">{errors.weight.message}</p>
+          <p className="mt-1 text-sm text-primary-500">{errors.weight.message}</p>
         )}
       </div>
 
       <div className="datepicker-container">
-        <label htmlFor="date" className="block text-sm font-medium mb-1 font-karla">
+        <label htmlFor="date" className="block text-sm font-medium mb-2 font-karla text-gray-700">
           Date
         </label>
         <Controller
@@ -80,19 +80,19 @@ export default function WeightForm({
               onChange={(date) => field.onChange(date)}
               maxDate={new Date()}
               dateFormat="MMMM d, yyyy"
-              className="w-full p-3 border border-gray-300 rounded-md"
+              className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500"
             />
           )}
         />
         {errors.date && (
-          <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>
+          <p className="mt-1 text-sm text-primary-500">{errors.date.message}</p>
         )}
       </div>
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-accent-500 hover:bg-accent-600 text-white font-medium py-3 px-4 rounded-md transition duration-200 disabled:opacity-50 font-karla"
+        className="w-full app-button mt-4"
       >
         {isSubmitting ? "Submitting..." : buttonText}
       </button>

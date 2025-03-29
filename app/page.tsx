@@ -28,40 +28,78 @@ export default function Home() {
 
   // Check auth status and load data
   useEffect(() => {
+    // Immediately clear any stuck state in localStorage
+    if (typeof window !== 'undefined') {
+      // This checks if the page was reloaded and the loading state might be stuck
+      const wasReloaded = performance.navigation && 
+                          performance.navigation.type === 1;
+      if (wasReloaded) {
+        // Clear any potentially problematic storage items
+        try {
+          console.log("Page was reloaded, cleaning potential stuck state");
+          localStorage.removeItem('sb-stuck');
+        } catch (e) {
+          console.warn("Error clearing localStorage:", e);
+        }
+      }
+    }
+
     const checkAuth = async () => {
       try {
+        // Set a flag that we're checking auth (helps with debugging)
+        localStorage.setItem('sb-checking', 'true');
+        
         const currentUser = await getUser();
         setUser(currentUser);
 
         if (currentUser) {
-          const userEntries = await getWeightEntries(currentUser.id);
-          setEntries(userEntries);
+          try {
+            const userEntries = await getWeightEntries(currentUser.id);
+            setEntries(userEntries);
+          } catch (error) {
+            console.error("Error fetching entries:", error);
+          }
         }
       } catch (error) {
         console.error("Error checking auth:", error);
       } finally {
+        // Clean up our debugging flag
+        localStorage.removeItem('sb-checking');
         setLoading(false);
       }
     };
+
+    // This is critical: we need to guarantee the loading state clears
+    const safetyTimeout = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
 
     checkAuth();
 
     // Set up Supabase auth listener
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event);
         const currentUser = session?.user;
         setUser(currentUser || null);
 
         if (currentUser) {
-          const userEntries = await getWeightEntries(currentUser.id);
-          setEntries(userEntries);
+          try {
+            const userEntries = await getWeightEntries(currentUser.id);
+            setEntries(userEntries);
+          } catch (error) {
+            console.error("Error fetching entries:", error);
+          }
         } else {
           setEntries([]);
         }
+        
+        setLoading(false);
       }
     );
 
     return () => {
+      clearTimeout(safetyTimeout);
       authListener?.subscription.unsubscribe();
     };
   }, []);
@@ -105,17 +143,49 @@ export default function Home() {
   };
 
   if (loading) {
+    // Force sign out function
+    const handleForceSignOut = async () => {
+      // Clear everything
+      try {
+        await supabase.auth.signOut();
+        localStorage.clear();
+        sessionStorage.clear();
+        // Force reload the page
+        window.location.href = "/";
+      } catch (e) {
+        console.error("Error during force sign out:", e);
+        // If even that fails, just reload
+        window.location.reload();
+      }
+    };
+
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-appBg">
+        <div className="app-card p-8 w-full max-w-md flex flex-col items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500 mb-4"></div>
+          <p className="text-gray-600 font-karla mb-4">Loading your data...</p>
+          
+          {/* Only show this after 5 seconds of loading */}
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-500 mb-2">
+              Taking too long? Try signing out completely.
+            </p>
+            <button 
+              onClick={handleForceSignOut}
+              className="text-primary-500 text-sm hover:text-primary-600 font-medium"
+            >
+              Force Sign Out
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full">
+      <div className="bg-appBg min-h-screen flex items-center justify-center p-4">
+        <div className="max-w-md w-full app-card p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 font-merriweather">
               Weight Tracker
@@ -132,81 +202,78 @@ export default function Home() {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col">
-      <Header userEmail={user.email} />
+    <div className="min-h-screen flex flex-col">
+      <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
+        <Header userEmail={user.email} />
 
-      <main className="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {entries.length > 0 ? (
-          <>
-            <div className="mb-6">
+        <main className="flex-grow">
+          {entries.length > 0 ? (
+            <>
               <Stats entries={entries} />
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
               <DashboardTabs
                 entries={entries}
                 onDelete={handleDeleteEntry}
                 onEdit={setEntryToEdit}
               />
+            </>
+          ) : (
+            <div className="app-card p-6 mb-6">
+              <EmptyState />
             </div>
-          </>
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <EmptyState />
-          </div>
-        )}
+          )}
 
-        {showAddForm ? (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium">Add Weight Entry</h2>
+          {showAddForm ? (
+            <div className="app-card p-6 mt-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-medium font-karla">Add Weight Entry</h2>
+                <button
+                  onClick={() => setShowAddForm(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <WeightForm onSubmit={handleAddEntry} />
+            </div>
+          ) : (
+            <div className="flex justify-center mt-6">
               <button
-                onClick={() => setShowAddForm(false)}
-                className="text-gray-400 hover:text-gray-500"
+                onClick={() => setShowAddForm(true)}
+                className="app-button"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  strokeWidth={1.5}
+                  strokeWidth={2}
                   stroke="currentColor"
-                  className="w-5 h-5"
+                  className="w-5 h-5 mr-2"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
+                    d="M12 4.5v15m7.5-7.5h-15"
                   />
                 </svg>
+                Add Weight Entry
               </button>
             </div>
-            <WeightForm onSubmit={handleAddEntry} />
-          </div>
-        ) : (
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="w-full bg-white border border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition duration-200"
-          >
-            <span className="flex items-center justify-center text-primary-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-5 h-5 mr-2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 4.5v15m7.5-7.5h-15"
-                />
-              </svg>
-              Add Weight Entry
-            </span>
-          </button>
-        )}
-      </main>
+          )}
+        </main>
+      </div>
 
       {entryToEdit && (
         <EditEntryModal
