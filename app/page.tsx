@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getUser } from "./lib/auth";
 import {
   getWeightEntries,
+  getPaginatedWeightEntries,
   addWeightEntry,
   updateWeightEntry,
   deleteWeightEntry,
@@ -23,8 +24,15 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [entries, setEntries] = useState<WeightEntry[]>([]);
+  const [allEntries, setAllEntries] = useState<WeightEntry[]>([]);
   const [entryToEdit, setEntryToEdit] = useState<WeightEntry | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  
+  // Pagination state
+  const [totalEntryCount, setTotalEntryCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const ENTRIES_PER_PAGE = 10;
 
   // Check auth status and load data
   useEffect(() => {
@@ -54,8 +62,23 @@ export default function Home() {
 
         if (currentUser) {
           try {
-            const userEntries = await getWeightEntries(currentUser.id);
-            setEntries(userEntries);
+            // Load first page of entries with pagination for the list view
+            const { entries: firstPageEntries, totalCount } = await getPaginatedWeightEntries(
+              currentUser.id,
+              1,
+              ENTRIES_PER_PAGE,
+              'desc'
+            );
+            
+            setEntries(firstPageEntries);
+            setTotalEntryCount(totalCount);
+            setCurrentPage(1);
+            
+            // For charts and stats, we need all entries but keep them separate
+            // This happens asynchronously in the background
+            const completeEntries = await getWeightEntries(currentUser.id);
+            setAllEntries(completeEntries);
+            
           } catch (error) {
             console.error("Error fetching entries:", error);
           }
@@ -85,13 +108,28 @@ export default function Home() {
 
         if (currentUser) {
           try {
-            const userEntries = await getWeightEntries(currentUser.id);
-            setEntries(userEntries);
+            // Load first page of entries with pagination
+            const { entries: firstPageEntries, totalCount } = await getPaginatedWeightEntries(
+              currentUser.id,
+              1,
+              ENTRIES_PER_PAGE,
+              'desc'
+            );
+            
+            setEntries(firstPageEntries);
+            setTotalEntryCount(totalCount);
+            setCurrentPage(1);
+            
+            // For charts and stats, we need all entries separately
+            const completeEntries = await getWeightEntries(currentUser.id);
+            setAllEntries(completeEntries);
           } catch (error) {
             console.error("Error fetching entries:", error);
           }
         } else {
           setEntries([]);
+          setAllEntries([]);
+          setTotalEntryCount(0);
         }
         
         setLoading(false);
@@ -104,13 +142,43 @@ export default function Home() {
     };
   }, []);
 
+  // Function to load more entries (for infinite scrolling)
+  const loadMoreEntries = async () => {
+    if (!user || isLoadingMore || entries.length >= totalEntryCount) return;
+    
+    setIsLoadingMore(true);
+    try {
+      const nextPage = currentPage + 1;
+      const { entries: newEntries } = await getPaginatedWeightEntries(
+        user.id,
+        nextPage,
+        ENTRIES_PER_PAGE,
+        'desc'
+      );
+      
+      // Append new entries without duplicates
+      const newEntryIds = new Set(newEntries.map(entry => entry.id));
+      const existingEntries = entries.filter(entry => !newEntryIds.has(entry.id));
+      
+      setEntries([...existingEntries, ...newEntries]);
+      setCurrentPage(nextPage);
+    } catch (error) {
+      console.error("Error loading more entries:", error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
   // Handle adding new entry
   const handleAddEntry = async (data: WeightFormData) => {
     if (!user) return;
 
     try {
       const newEntry = await addWeightEntry(data, user.id);
-      setEntries([...entries, newEntry]);
+      // Update both states
+      setEntries(prevEntries => [newEntry, ...prevEntries]);
+      setAllEntries(prevEntries => [...prevEntries, newEntry]);
+      setTotalEntryCount(prevCount => prevCount + 1);
       setShowAddForm(false);
     } catch (error) {
       console.error("Error adding entry:", error);
@@ -122,8 +190,12 @@ export default function Home() {
   const handleUpdateEntry = async (id: string, data: WeightFormData) => {
     try {
       const updatedEntry = await updateWeightEntry(id, data);
-      setEntries(
-        entries.map((entry) => (entry.id === id ? updatedEntry : entry))
+      // Update both states
+      setEntries(prevEntries => 
+        prevEntries.map((entry) => (entry.id === id ? updatedEntry : entry))
+      );
+      setAllEntries(prevEntries => 
+        prevEntries.map((entry) => (entry.id === id ? updatedEntry : entry))
       );
     } catch (error) {
       console.error("Error updating entry:", error);
@@ -135,7 +207,14 @@ export default function Home() {
   const handleDeleteEntry = async (id: string) => {
     try {
       await deleteWeightEntry(id);
-      setEntries(entries.filter((entry) => entry.id !== id));
+      // Update both states
+      setEntries(prevEntries => 
+        prevEntries.filter((entry) => entry.id !== id)
+      );
+      setAllEntries(prevEntries => 
+        prevEntries.filter((entry) => entry.id !== id)
+      );
+      setTotalEntryCount(prevCount => prevCount - 1);
     } catch (error) {
       console.error("Error deleting entry:", error);
       alert("Failed to delete entry. Please try again.");
@@ -207,13 +286,19 @@ export default function Home() {
         <Header userEmail={user.email} />
 
         <main className="flex-grow">
-          {entries.length > 0 ? (
+          {(entries.length > 0 || allEntries.length > 0) ? (
             <>
-              <Stats entries={entries} />
+              {/* Always use all entries for stats to show accurate data */}
+              <Stats entries={allEntries} />
               <DashboardTabs
                 entries={entries}
+                allEntries={allEntries} 
                 onDelete={handleDeleteEntry}
                 onEdit={setEntryToEdit}
+                onLoadMore={loadMoreEntries}
+                hasMore={entries.length < totalEntryCount}
+                isLoadingMore={isLoadingMore}
+                activeTab="chart" 
               />
             </>
           ) : (

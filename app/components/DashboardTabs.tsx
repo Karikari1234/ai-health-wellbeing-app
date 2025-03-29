@@ -1,18 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { WeightEntry } from '../lib/types';
 import WeightChart from './WeightChart';
 import WeightList from './WeightList';
 
 interface DashboardTabsProps {
   entries: WeightEntry[];
+  allEntries?: WeightEntry[];
   onDelete: (id: string) => Promise<void>;
   onEdit: (entry: WeightEntry) => void;
+  onLoadMore?: () => Promise<void>;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  activeTab?: "chart" | "list";
 }
 
-export default function DashboardTabs({ entries, onDelete, onEdit }: DashboardTabsProps) {
-  const [activeTab, setActiveTab] = useState<"chart" | "list">("chart");
+export default function DashboardTabs({ 
+  entries, 
+  allEntries = [],
+  onDelete, 
+  onEdit,
+  onLoadMore,
+  hasMore = false,
+  isLoadingMore = false,
+  activeTab: initialTab = "chart"
+}: DashboardTabsProps) {
+  const [activeTab, setActiveTab] = useState<"chart" | "list">(initialTab);
+
+  // Load more data when switching to the list tab
+  useEffect(() => {
+    if (activeTab === "list" && hasMore && !isLoadingMore && onLoadMore) {
+      onLoadMore();
+    }
+  }, [activeTab, hasMore, isLoadingMore, onLoadMore]);
 
   return (
     <div className="app-card p-6">
@@ -41,9 +62,16 @@ export default function DashboardTabs({ entries, onDelete, onEdit }: DashboardTa
 
       <div>
         {activeTab === "chart" ? (
-          <WeightChart entries={entries} />
+          <WeightChart entries={allEntries.length > 0 ? allEntries : entries} />
         ) : (
-          <WeightList entries={entries} onDelete={onDelete} onEdit={onEdit} />
+          <WeightList 
+            entries={entries} 
+            onDelete={onDelete} 
+            onEdit={onEdit} 
+            onLoadMore={onLoadMore}
+            hasMore={hasMore}
+            isLoadingMore={isLoadingMore}
+          />
         )}
       </div>
     </div>

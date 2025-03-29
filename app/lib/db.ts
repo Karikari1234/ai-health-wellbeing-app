@@ -17,6 +17,34 @@ export async function getWeightEntries(userId: string) {
   return data as WeightEntry[];
 }
 
+// New function to support paginated queries for better performance
+export async function getPaginatedWeightEntries(
+  userId: string, 
+  page: number, 
+  pageSize: number,
+  sortDirection: 'asc' | 'desc' = 'desc'
+) {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error, count } = await supabase
+    .from("weight_entries")
+    .select("*", { count: 'exact' })
+    .eq("user_id", userId)
+    .order("date", { ascending: sortDirection === 'asc' })
+    .range(from, to);
+
+  if (error) {
+    console.error("Error fetching paginated weight entries:", error);
+    return { entries: [], totalCount: 0 };
+  }
+
+  return { 
+    entries: data as WeightEntry[], 
+    totalCount: count || 0 
+  };
+}
+
 export async function addWeightEntry(entry: WeightFormData, userId: string) {
   const formattedDate = format(entry.date, "yyyy-MM-dd");
 

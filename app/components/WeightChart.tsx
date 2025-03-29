@@ -10,11 +10,13 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler,
+  TimeScale,
   ChartDataset,
   ChartData,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, subMonths, isAfter } from "date-fns";
 import { WeightEntry } from "../lib/types";
 
 ChartJS.register(
@@ -22,9 +24,11 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  TimeScale,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 // Define a proper type for our dataset
@@ -44,7 +48,7 @@ interface WeightChartProps {
 }
 
 export default function WeightChart({ entries }: WeightChartProps) {
-  // Initialize chart data with proper typing
+  // State for chart data
   const [chartData, setChartData] = useState<WeightChartData>({
     labels: [],
     datasets: [
@@ -53,30 +57,71 @@ export default function WeightChart({ entries }: WeightChartProps) {
         label: "Weight (kg)",
         data: [],
         borderColor: "rgb(255, 107, 107)",
-        backgroundColor: "rgba(255, 107, 107, 0.5)",
-        tension: 0.5,
-        borderWidth: 3,
-        pointRadius: 4,
+        backgroundColor: "rgba(255, 107, 107, 0.2)",
+        tension: 0.4,
+        borderWidth: 2,
+        pointRadius: 3,
         pointHoverRadius: 6,
         pointBackgroundColor: "white",
         pointBorderColor: "rgb(255, 107, 107)",
         pointBorderWidth: 2,
+        fill: true,
       },
     ],
   });
+  
+  // State for time period selection
+  const [timePeriod, setTimePeriod] = useState<'1m' | '3m' | '6m' | 'all'>('3m');
 
   useEffect(() => {
     if (!entries.length) return;
 
+    // Sort entries by date (oldest to newest)
     const sortedEntries = [...entries].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
-    const labels = sortedEntries.map((entry) =>
+    // Filter entries based on selected time period
+    let filteredEntries = sortedEntries;
+    const now = new Date();
+    
+    if (timePeriod === '1m') {
+      const oneMonthAgo = subMonths(now, 1);
+      filteredEntries = sortedEntries.filter(entry => 
+        isAfter(new Date(entry.date), oneMonthAgo)
+      );
+    } else if (timePeriod === '3m') {
+      const threeMonthsAgo = subMonths(now, 3);
+      filteredEntries = sortedEntries.filter(entry => 
+        isAfter(new Date(entry.date), threeMonthsAgo)
+      );
+    } else if (timePeriod === '6m') {
+      const sixMonthsAgo = subMonths(now, 6);
+      filteredEntries = sortedEntries.filter(entry => 
+        isAfter(new Date(entry.date), sixMonthsAgo)
+      );
+    }
+
+    // Ensure we have at least 2 entries for the chart to look good
+    if (filteredEntries.length < 2 && sortedEntries.length >= 2) {
+      filteredEntries = sortedEntries.slice(-Math.min(sortedEntries.length, 10));
+    }
+
+    // Handle data point density to avoid overcrowding
+    let displayEntries = filteredEntries;
+    if (filteredEntries.length > 30) {
+      // For large datasets, sample the data to reduce density
+      const sampleInterval = Math.ceil(filteredEntries.length / 30);
+      displayEntries = filteredEntries.filter((_, index) => 
+        index % sampleInterval === 0 || index === filteredEntries.length - 1
+      );
+    }
+
+    const labels = displayEntries.map((entry) =>
       format(parseISO(entry.date), "MMM d")
     );
 
-    const weights = sortedEntries.map((entry) => entry.weight);
+    const weights = displayEntries.map((entry) => entry.weight);
 
     setChartData({
       labels,
@@ -86,20 +131,41 @@ export default function WeightChart({ entries }: WeightChartProps) {
           label: "Weight (kg)",
           data: weights,
           borderColor: "rgb(255, 107, 107)",
-          backgroundColor: "rgba(255, 107, 107, 0.5)",
-          tension: 0.5,
-          borderWidth: 3,
-          pointRadius: 4,
+          backgroundColor: "rgba(255, 107, 107, 0.2)",
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: displayEntries.length > 20 ? 2 : 3,
           pointHoverRadius: 6,
           pointBackgroundColor: "white",
           pointBorderColor: "rgb(255, 107, 107)",
           pointBorderWidth: 2,
+          fill: true,
         },
       ],
     });
-  }, [entries]);
+  }, [entries, timePeriod]);
 
-  // Create properly typed options
+  // Calculate dynamic Y axis range for better visualization
+  const getYAxisRange = () => {
+    if (!entries.length) return { min: 0, max: 100 };
+    
+    const weights = entries.map(e => e.weight);
+    const min = Math.min(...weights);
+    const max = Math.max(...weights);
+    const range = max - min;
+    
+    // Set padding based on range to avoid extreme scaling
+    const padding = Math.max(range * 0.1, 1);
+    
+    return {
+      min: Math.max(0, min - padding),
+      max: max + padding
+    };
+  };
+
+  const yAxisRange = getYAxisRange();
+
+  // Chart options
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -128,10 +194,10 @@ export default function WeightChart({ entries }: WeightChartProps) {
     },
     scales: {
       y: {
-        min: Math.floor(Math.min(...entries.map((e) => e.weight)) - 1),
-        max: Math.ceil(Math.max(...entries.map((e) => e.weight)) + 1),
+        min: yAxisRange.min,
+        max: yAxisRange.max,
         ticks: {
-          precision: 0,
+          precision: 1,
           font: {
             family: "'Karla', sans-serif"
           }
@@ -142,6 +208,10 @@ export default function WeightChart({ entries }: WeightChartProps) {
       },
       x: {
         ticks: {
+          maxRotation: 45,
+          minRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 10,
           font: {
             family: "'Karla', sans-serif"
           }
@@ -157,8 +227,11 @@ export default function WeightChart({ entries }: WeightChartProps) {
     },
     elements: {
       point: {
-        hoverRadius: 8,
+        hoverRadius: 6,
       },
+      line: {
+        tension: 0.4,
+      }
     },
   };
 
@@ -174,8 +247,63 @@ export default function WeightChart({ entries }: WeightChartProps) {
   }
 
   return (
-    <div className="h-64 md:h-80 chart-container">
-      <Line options={options} data={chartData as ChartData<'line', number[]>} />
+    <div className="flex flex-col">
+      <div className="flex justify-end mb-4">
+        <div className="inline-flex rounded-md shadow-sm" role="group">
+          <button 
+            type="button" 
+            onClick={() => setTimePeriod('1m')}
+            className={`px-3 py-1 text-xs font-medium ${
+              timePeriod === '1m'
+                ? 'bg-primary-100 text-primary-800'
+                : 'bg-white text-gray-500 hover:bg-gray-50'
+            } rounded-l-lg border border-gray-200`}
+          >
+            1M
+          </button>
+          <button 
+            type="button" 
+            onClick={() => setTimePeriod('3m')}
+            className={`px-3 py-1 text-xs font-medium ${
+              timePeriod === '3m'
+                ? 'bg-primary-100 text-primary-800'
+                : 'bg-white text-gray-500 hover:bg-gray-50'
+            } border-t border-b border-gray-200`}
+          >
+            3M
+          </button>
+          <button 
+            type="button" 
+            onClick={() => setTimePeriod('6m')}
+            className={`px-3 py-1 text-xs font-medium ${
+              timePeriod === '6m'
+                ? 'bg-primary-100 text-primary-800'
+                : 'bg-white text-gray-500 hover:bg-gray-50'
+            } border-t border-b border-gray-200`}
+          >
+            6M
+          </button>
+          <button 
+            type="button" 
+            onClick={() => setTimePeriod('all')}
+            className={`px-3 py-1 text-xs font-medium ${
+              timePeriod === 'all'
+                ? 'bg-primary-100 text-primary-800'
+                : 'bg-white text-gray-500 hover:bg-gray-50'
+            } rounded-r-lg border border-gray-200`}
+          >
+            All
+          </button>
+        </div>
+      </div>
+      <div className="h-64 md:h-80 chart-container">
+        <Line options={options} data={chartData as ChartData<'line', number[]>} />
+      </div>
+      {entries.length > 30 && timePeriod === 'all' && (
+        <p className="text-xs text-gray-500 mt-2 text-center">
+          Showing {chartData.labels?.length || 0} of {entries.length} data points
+        </p>
+      )}
     </div>
   );
 }
