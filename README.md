@@ -273,6 +273,7 @@ The app includes several performance optimizations:
 
 ## User Experience Improvements
 
+- Floating action button (FAB) for easily adding weight entries from anywhere in the app
 - Responsive mobile-friendly design for authentication forms
 - Auto-scrolling to entry form when adding new weights
 - Intelligent date handling preventing duplicate entries
