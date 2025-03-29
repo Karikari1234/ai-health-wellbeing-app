@@ -46,7 +46,7 @@ export default function WeightForm({
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
       <div>
-        <label htmlFor="weight" className="block text-sm font-medium mb-1">
+        <label htmlFor="weight" className="block text-sm font-medium mb-1 font-karla">
           Weight (kg)
         </label>
         <input
@@ -67,7 +67,7 @@ export default function WeightForm({
       </div>
 
       <div className="datepicker-container">
-        <label htmlFor="date" className="block text-sm font-medium mb-1">
+        <label htmlFor="date" className="block text-sm font-medium mb-1 font-karla">
           Date
         </label>
         <Controller
@@ -92,7 +92,7 @@ export default function WeightForm({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-accent-500 hover:bg-accent-600 text-white font-medium py-3 px-4 rounded-md transition duration-200 disabled:opacity-50"
+        className="w-full bg-accent-500 hover:bg-accent-600 text-white font-medium py-3 px-4 rounded-md transition duration-200 disabled:opacity-50 font-karla"
       >
         {isSubmitting ? "Submitting..." : buttonText}
       </button>

@@ -6,6 +6,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        karla: ['var(--font-karla)', 'sans-serif'],
+        merriweather: ['var(--font-merriweather)', 'serif'],
+      },
       colors: {
         primary: {
           50: "#f0f9ff",

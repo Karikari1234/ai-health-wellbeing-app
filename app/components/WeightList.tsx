@@ -43,10 +43,10 @@ export default function WeightList({
           <div key={entry.id} className="bg-white dark:bg-slate-800 p-4">
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-medium">
+                <p className="font-medium font-merriweather">
                   {format(parseISO(entry.date), "MMMM d, yyyy")}
                 </p>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-600 dark:text-gray-400 font-karla">
                   {entry.weight.toFixed(1)} kg
                 </p>
               </div>

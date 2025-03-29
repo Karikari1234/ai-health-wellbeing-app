@@ -1,10 +1,20 @@
 // File: app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Karla, Merriweather } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 
-const inter = Inter({ subsets: ["latin"] });
+const karla = Karla({ 
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-karla",
+});
+
+const merriweather = Merriweather({
+  subsets: ["latin"],
+  weight: ["300", "400", "700", "900"],
+  variable: "--font-merriweather",
+});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -35,7 +45,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${karla.variable} ${merriweather.variable} font-karla`}>
         {children}
         <Script id="register-sw" strategy="afterInteractive">
           {`

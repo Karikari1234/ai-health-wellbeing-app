@@ -68,20 +68,20 @@ export default function Stats({ entries }: StatsProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-gray-500 dark:text-gray-400 font-karla">
           Current Weight
         </p>
-        <p className="text-xl font-bold mt-1">
+        <p className="text-xl font-bold mt-1 font-merriweather">
           {stats.currentWeight?.toFixed(1)} kg
         </p>
       </div>
 
       <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-gray-500 dark:text-gray-400 font-karla">
           30-Day Change
         </p>
         <p
-          className={`text-xl font-bold mt-1 ${
+          className={`text-xl font-bold mt-1 font-merriweather ${
             stats.changeLastMonth !== null
               ? stats.changeLastMonth > 0
                 ? "text-red-600"
@@ -100,9 +100,9 @@ export default function Stats({ entries }: StatsProps) {
       </div>
 
       <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
-        <p className="text-sm text-gray-500 dark:text-gray-400">Total Change</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 font-karla">Total Change</p>
         <p
-          className={`text-xl font-bold mt-1 ${
+          className={`text-xl font-bold mt-1 font-merriweather ${
             stats.totalChange !== null
               ? stats.totalChange > 0
                 ? "text-red-600"
@@ -121,10 +121,10 @@ export default function Stats({ entries }: StatsProps) {
       </div>
 
       <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-gray-500 dark:text-gray-400 font-karla">
           Average Weight
         </p>
-        <p className="text-xl font-bold mt-1">
+        <p className="text-xl font-bold mt-1 font-merriweather">
           {stats.avgWeight?.toFixed(1)} kg
         </p>
       </div>
