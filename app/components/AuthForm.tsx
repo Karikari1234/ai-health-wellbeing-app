@@ -94,12 +94,25 @@ export default function AuthForm() {
     return (
       <div className="max-w-md w-full mx-auto p-6 bg-white dark:bg-slate-800 rounded-lg shadow-md">
         <div className="text-center">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto text-primary-600 mb-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-12 h-12 mx-auto text-primary-600 mb-4"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+            />
           </svg>
           <h2 className="text-2xl font-bold mb-2">Check your email</h2>
-          <p className="mb-6 text-gray-600 dark:text-gray-400">We've sent password reset instructions to {email}</p>
-          <button 
+          <p className="mb-6 text-gray-600 dark:text-gray-400">
+            We&apos;ve sent password reset instructions to {email}
+          </p>
+          <button
             onClick={() => {
               setIsForgotPassword(false);
               setResetEmailSent(false);

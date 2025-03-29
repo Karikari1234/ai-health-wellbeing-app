@@ -39,17 +39,17 @@ export default function DiagnosticPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Supabase Diagnostic
           </h1>
-          <Link 
+          <Link
             href="/"
             className="text-sm font-medium text-primary-600 hover:text-primary-700"
           >
             Return to App
           </Link>
         </div>
-        
+
         <div className="space-y-6">
           <SupabaseVerifier />
-          
+
           <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-medium">Environment Variables</h2>
@@ -60,7 +60,7 @@ export default function DiagnosticPage() {
                 {showRawEnv ? "Hide" : "Show"}
               </button>
             </div>
-            
+
             {showRawEnv && (
               <div className="bg-gray-100 dark:bg-slate-700 p-4 rounded-md overflow-auto">
                 <pre className="text-xs">
@@ -68,7 +68,7 @@ export default function DiagnosticPage() {
                 </pre>
               </div>
             )}
-            
+
             <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
               <p>Common issues with Supabase connection:</p>
               <ul className="list-disc pl-5 mt-2 space-y-1">
@@ -79,13 +79,20 @@ export default function DiagnosticPage() {
                 <li>Billing issues with your Supabase account</li>
               </ul>
             </div>
-            
+
             <div className="mt-6 p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 text-sm rounded-md">
               <p>
-                <strong>Tip:</strong> If your environment variables are correct 
-                but you still can't connect, try to restart your development server 
-                with <code className="font-mono bg-blue-100 dark:bg-blue-800/30 px-1 rounded">npm run dev</code> or create a new 
-                <code className="font-mono bg-blue-100 dark:bg-blue-800/30 px-1 rounded">.env.local</code> file.
+                <strong>Tip:</strong> If your environment variables are correct
+                but you still can&apos;t connect, try to restart your
+                development server with{" "}
+                <code className="font-mono bg-blue-100 dark:bg-blue-800/30 px-1 rounded">
+                  npm run dev
+                </code>{" "}
+                or create a new
+                <code className="font-mono bg-blue-100 dark:bg-blue-800/30 px-1 rounded">
+                  .env.local
+                </code>{" "}
+                file.
               </p>
             </div>
           </div>
