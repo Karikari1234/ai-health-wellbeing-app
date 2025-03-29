@@ -22,7 +22,7 @@ export default function Header({ userEmail }: HeaderProps) {
   };
 
   return (
-    <header className="bg-white dark:bg-slate-800 shadow-sm">
+    <header className="bg-white shadow-sm">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
@@ -40,13 +40,13 @@ export default function Header({ userEmail }: HeaderProps) {
                 d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
               />
             </svg>
-            <h1 className="ml-2 text-xl font-bold text-gray-900 dark:text-white font-merriweather">
+            <h1 className="ml-2 text-xl font-bold text-gray-900 font-merriweather">
               Weight Tracker
             </h1>
           </div>
 
           <div className="flex items-center">
-            <span className="text-sm text-gray-600 dark:text-gray-300 mr-4 hidden sm:inline">
+            <span className="text-sm text-gray-600 mr-4 hidden sm:inline">
               {userEmail}
             </span>
             <button

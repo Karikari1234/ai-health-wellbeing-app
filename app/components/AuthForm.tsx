@@ -92,7 +92,7 @@ export default function AuthForm() {
   // Password reset success view
   if (resetEmailSent) {
     return (
-      <div className="max-w-md w-full mx-auto p-6 bg-white dark:bg-slate-800 rounded-lg shadow-md">
+      <div className="max-w-md w-full mx-auto p-6 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -129,7 +129,7 @@ export default function AuthForm() {
   // Forgot password view
   if (isForgotPassword) {
     return (
-      <div className="max-w-md w-full mx-auto p-6 bg-white dark:bg-slate-800 rounded-lg shadow-md">
+      <div className="max-w-md w-full mx-auto p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-center mb-6 font-merriweather">Reset Password</h2>
 
         {error && (
@@ -149,7 +149,7 @@ export default function AuthForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-slate-700 rounded-md"
+              className="w-full p-3 border border-gray-300 rounded-md"
             />
           </div>
 
@@ -176,7 +176,7 @@ export default function AuthForm() {
 
   // Sign in / Sign up view
   return (
-    <div className="max-w-md w-full mx-auto p-6 bg-white dark:bg-slate-800 rounded-lg shadow-md">
+    <div className="max-w-md w-full mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-center mb-6 font-merriweather">
         {isSignUp ? "Create Account" : "Sign In"}
       </h2>
@@ -208,7 +208,7 @@ export default function AuthForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-slate-700 rounded-md"
+            className="w-full p-3 border border-gray-300 rounded-md"
           />
         </div>
 
@@ -223,7 +223,7 @@ export default function AuthForm() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-slate-700 rounded-md"
+            className="w-full p-3 border border-gray-300 rounded-md"
           />
           {isSignUp && <PasswordRequirements password={password} />}
         </div>

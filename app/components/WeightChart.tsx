@@ -36,8 +36,8 @@ export default function WeightChart({ entries }: WeightChartProps) {
       {
         label: "Weight (kg)",
         data: [] as number[],
-        borderColor: "rgb(14, 165, 233)",
-        backgroundColor: "rgba(14, 165, 233, 0.5)",
+        borderColor: "rgb(220, 20, 60)",
+        backgroundColor: "rgba(220, 20, 60, 0.5)",
         tension: 0.4,
       },
     ],
@@ -62,8 +62,8 @@ export default function WeightChart({ entries }: WeightChartProps) {
         {
           label: "Weight (kg)",
           data: weights,
-          borderColor: "rgb(14, 165, 233)",
-          backgroundColor: "rgba(14, 165, 233, 0.5)",
+          borderColor: "rgb(220, 20, 60)",
+          backgroundColor: "rgba(220, 20, 60, 0.5)",
           tension: 0.4,
         },
       ],
@@ -93,9 +93,9 @@ export default function WeightChart({ entries }: WeightChartProps) {
 
   if (!entries.length) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-800">
-        <p className="text-gray-500 dark:text-gray-400">No data to display</p>
-        <p className="text-sm text-gray-400 dark:text-gray-500">
+      <div className="flex flex-col items-center justify-center h-64 border border-gray-200 rounded-lg bg-gray-50">
+        <p className="text-gray-500">No data to display</p>
+        <p className="text-sm text-gray-400">
           Add weight entries to see your progress
         </p>
       </div>

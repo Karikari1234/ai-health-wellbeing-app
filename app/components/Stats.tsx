@@ -67,8 +67,8 @@ export default function Stats({ entries }: StatsProps) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
-        <p className="text-sm text-gray-500 dark:text-gray-400 font-karla">
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <p className="text-sm text-gray-500 font-karla">
           Current Weight
         </p>
         <p className="text-xl font-bold mt-1 font-merriweather">
@@ -76,8 +76,8 @@ export default function Stats({ entries }: StatsProps) {
         </p>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
-        <p className="text-sm text-gray-500 dark:text-gray-400 font-karla">
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <p className="text-sm text-gray-500 font-karla">
           30-Day Change
         </p>
         <p
@@ -99,8 +99,8 @@ export default function Stats({ entries }: StatsProps) {
         </p>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
-        <p className="text-sm text-gray-500 dark:text-gray-400 font-karla">Total Change</p>
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <p className="text-sm text-gray-500 font-karla">Total Change</p>
         <p
           className={`text-xl font-bold mt-1 font-merriweather ${
             stats.totalChange !== null
@@ -120,8 +120,8 @@ export default function Stats({ entries }: StatsProps) {
         </p>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
-        <p className="text-sm text-gray-500 dark:text-gray-400 font-karla">
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <p className="text-sm text-gray-500 font-karla">
           Average Weight
         </p>
         <p className="text-xl font-bold mt-1 font-merriweather">

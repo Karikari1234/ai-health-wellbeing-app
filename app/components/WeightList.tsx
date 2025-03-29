@@ -29,24 +29,24 @@ export default function WeightList({
 
   if (!entries.length) {
     return (
-      <div className="text-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-        <p className="text-gray-500 dark:text-gray-400">No entries yet</p>
+      <div className="text-center p-4 border border-gray-200 rounded-lg">
+        <p className="text-gray-500">No entries yet</p>
       </div>
     );
   }
 
   return (
-    <div className="divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+    <div className="divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden">
       {entries
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .map((entry) => (
-          <div key={entry.id} className="bg-white dark:bg-slate-800 p-4">
+          <div key={entry.id} className="bg-white p-4">
             <div className="flex justify-between items-center">
               <div>
                 <p className="font-medium font-merriweather">
                   {format(parseISO(entry.date), "MMMM d, yyyy")}
                 </p>
-                <p className="text-gray-600 dark:text-gray-400 font-karla">
+                <p className="text-gray-600 font-karla">
                   {entry.weight.toFixed(1)} kg
                 </p>
               </div>

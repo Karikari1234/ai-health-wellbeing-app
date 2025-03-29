@@ -58,7 +58,7 @@ export default function WeightForm({
             min: { value: 20, message: "Weight must be at least 20kg" },
             max: { value: 300, message: "Weight must be less than 300kg" },
           })}
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-slate-700 rounded-md"
+          className="w-full p-3 border border-gray-300 rounded-md"
           placeholder="Enter your weight"
         />
         {errors.weight && (
@@ -80,7 +80,7 @@ export default function WeightForm({
               onChange={(date) => field.onChange(date)}
               maxDate={new Date()}
               dateFormat="MMMM d, yyyy"
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-slate-700 rounded-md"
+              className="w-full p-3 border border-gray-300 rounded-md"
             />
           )}
         />

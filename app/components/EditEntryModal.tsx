@@ -24,8 +24,8 @@ export default function EditEntryModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-lg w-full">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
+        <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold font-merriweather">Edit Weight Entry</h2>
         </div>
 
@@ -41,7 +41,7 @@ export default function EditEntryModal({
 
           <button
             onClick={onClose}
-            className="mt-4 w-full py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium font-karla"
+            className="mt-4 w-full py-2 text-gray-600 hover:text-gray-900 font-medium font-karla"
           >
             Cancel
           </button>

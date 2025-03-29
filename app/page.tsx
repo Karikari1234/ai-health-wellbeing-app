@@ -114,13 +114,13 @@ export default function Home() {
 
   if (!user) {
     return (
-      <div className="bg-gray-50 dark:bg-slate-900 min-h-screen flex items-center justify-center p-4">
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-gray-900 font-merriweather">
               Weight Tracker
             </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-gray-600">
               Sign in to track and monitor your weight over time
             </p>
           </div>
@@ -132,7 +132,7 @@ export default function Home() {
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-900 min-h-screen flex flex-col">
+    <div className="bg-gray-50 min-h-screen flex flex-col">
       <Header userEmail={user.email} />
 
       <main className="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -142,7 +142,7 @@ export default function Home() {
               <Stats entries={entries} />
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 mb-6">
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
               <DashboardTabs
                 entries={entries}
                 onDelete={handleDeleteEntry}
@@ -151,13 +151,13 @@ export default function Home() {
             </div>
           </>
         ) : (
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 mb-6">
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <EmptyState />
           </div>
         )}
 
         {showAddForm ? (
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-medium">Add Weight Entry</h2>
               <button
@@ -185,7 +185,7 @@ export default function Home() {
         ) : (
           <button
             onClick={() => setShowAddForm(true)}
-            className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-700 rounded-lg p-4 text-center hover:bg-gray-50 dark:hover:bg-slate-700 transition duration-200"
+            className="w-full bg-white border border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition duration-200"
           >
             <span className="flex items-center justify-center text-primary-600">
               <svg

@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   title: "Weight Tracker",
   description: "Track your weight and progress over time",
   manifest: "/manifest.json",
-  themeColor: "#0ea5e9",
+  themeColor: "#dc143c",
   other: {
     "mobile-web-app-capable": "yes", // Updated from apple-mobile-web-app-capable
   },
