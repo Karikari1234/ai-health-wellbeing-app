@@ -31,7 +31,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={2.5}
-          stroke="currentColor"
+          stroke="white"
           className="w-7 h-7"
         >
           <path

@@ -14,12 +14,11 @@ import { WeightEntry, WeightFormData, SupabaseUser } from "./lib/types";
 import { supabase } from "./lib/supabase";
 import AuthForm from "./components/AuthForm";
 import Header from "./components/Header";
-import WeightForm from "./components/WeightForm";
 import DashboardTabs from "./components/DashboardTabs";
 import Stats from "./components/Stats";
 import EmptyState from "./components/EmptyState";
-import EditEntryModal from "./components/EditEntryModal";
 import InstallPrompt from "./components/InstallPrompt";
+import { WeightDrawer } from "./components/WeightDrawer";
 import FloatingActionButton from "./components/FloatingActionButton";
 
 export default function Home() {
@@ -29,27 +28,15 @@ export default function Home() {
   const [entries, setEntries] = useState<WeightEntry[]>([]);
   const [allEntries, setAllEntries] = useState<WeightEntry[]>([]);
   const [entryToEdit, setEntryToEdit] = useState<WeightEntry | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
+  const [showEditDrawer, setShowEditDrawer] = useState(false);
+  const [showAddDrawer, setShowAddDrawer] = useState(false);
   
   // Pagination state
   const [totalEntryCount, setTotalEntryCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const ENTRIES_PER_PAGE = 10;
-
-  // Handle showing add form with auto-scroll
-  const handleShowAddForm = () => {
-    setShowAddForm(true);
-    // Use setTimeout to ensure the form is rendered before scrolling
-    setTimeout(() => {
-      // Find the add form element and scroll to it
-      const addFormElement = document.getElementById('add-weight-form');
-      if (addFormElement) {
-        addFormElement.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  };
 
   // Function to load user data
   const loadUserData = async (userId: string) => {
@@ -270,8 +257,6 @@ export default function Home() {
       } else {
         setAllEntries(prevEntries => [...prevEntries, resultEntry]);
       }
-      
-      setShowAddForm(false);
     } catch (error) {
       console.error("Error adding/updating entry:", error);
       alert("Failed to save entry. Please try again.");
@@ -279,16 +264,21 @@ export default function Home() {
   };
 
   // Handle updating entry
-  const handleUpdateEntry = async (id: string, data: WeightFormData) => {
+  const handleUpdateEntry = async (data: WeightFormData) => {
+    if (!entryToEdit || !user) return;
+    
     try {
-      const updatedEntry = await updateWeightEntry(id, data);
+      const updatedEntry = await updateWeightEntry(entryToEdit.id, data);
       // Update both states
       setEntries(prevEntries => 
-        prevEntries.map((entry) => (entry.id === id ? updatedEntry : entry))
+        prevEntries.map((entry) => (entry.id === entryToEdit.id ? updatedEntry : entry))
       );
       setAllEntries(prevEntries => 
-        prevEntries.map((entry) => (entry.id === id ? updatedEntry : entry))
+        prevEntries.map((entry) => (entry.id === entryToEdit.id ? updatedEntry : entry))
       );
+      
+      // Clear the edit state
+      setEntryToEdit(null);
     } catch (error) {
       console.error("Error updating entry:", error);
       alert("Failed to update entry. Please try again.");
@@ -311,6 +301,12 @@ export default function Home() {
       console.error("Error deleting entry:", error);
       alert("Failed to delete entry. Please try again.");
     }
+  };
+
+  // Handle setting entry to edit and show edit drawer
+  const handleEditEntry = (entry: WeightEntry) => {
+    setEntryToEdit(entry);
+    setShowEditDrawer(true);
   };
 
   if (loading) {
@@ -433,7 +429,7 @@ export default function Home() {
                 entries={entries}
                 allEntries={allEntries} 
                 onDelete={handleDeleteEntry}
-                onEdit={setEntryToEdit}
+                onEdit={handleEditEntry}
                 onLoadMore={loadMoreEntries}
                 hasMore={entries.length < totalEntryCount}
                 isLoadingMore={isLoadingMore}
@@ -445,51 +441,39 @@ export default function Home() {
               <EmptyState />
             </div>
           )}
+          
+          {/* Add Weight button that triggers showing the drawer */}
+          <FloatingActionButton 
+            onClick={() => setShowAddDrawer(true)} 
+            ariaLabel="Add weight entry" 
+          />
 
-          {showAddForm ? (
-            <div className="app-card p-6 mt-6" id="add-weight-form">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-medium font-karla">Add Weight Entry</h2>
-                <button
-                  onClick={() => setShowAddForm(false)}
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-              <WeightForm onSubmit={handleAddEntry} entries={allEntries} />
-            </div>
-          ) : (
-            // Only show floating action button when not in add mode
-            <FloatingActionButton 
-              onClick={handleShowAddForm} 
-              ariaLabel="Add weight entry"
+          {/* Add weight drawer */}
+          {showAddDrawer && (
+            <WeightDrawer 
+              onSubmit={handleAddEntry}
+              entries={allEntries}
+              open={showAddDrawer}
+              setOpen={setShowAddDrawer}
+            />
+          )}
+          
+          {/* Edit weight drawer */}
+          {entryToEdit && showEditDrawer && (
+            <WeightDrawer
+              onSubmit={handleUpdateEntry}
+              entries={allEntries.filter(entry => entry.id !== entryToEdit.id)}
+              initialData={{
+                weight: entryToEdit.weight,
+                date: new Date(entryToEdit.date)
+              }}
+              isEdit={true}
+              open={showEditDrawer}
+              setOpen={setShowEditDrawer}
             />
           )}
         </main>
       </div>
-
-      {entryToEdit && (
-        <EditEntryModal
-          entry={entryToEdit}
-          onClose={() => setEntryToEdit(null)}
-          onSubmit={handleUpdateEntry}
-          entries={allEntries}
-        />
-      )}
 
       {user && <InstallPrompt />}
     </div>
