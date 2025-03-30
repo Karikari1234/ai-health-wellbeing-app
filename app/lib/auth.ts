@@ -1,16 +1,52 @@
 import { supabase } from "./supabase";
+import { SupabaseUser } from "./types";
 
 export async function getUser() {
   try {
     // First, check if there's already a session
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (sessionData?.session) {
-      return sessionData.session.user;
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.warn("Error getting session:", sessionError);
+      return null;
     }
     
-    // If no session found, try to get the user with a reasonable timeout
-    const { data: { user } } = await supabase.auth.getUser();
-    return user;
+    if (sessionData?.session) {
+      console.log("Found existing session for user:", sessionData.session.user.id);
+      return sessionData.session.user as SupabaseUser;
+    }
+    
+    // If no session found, try to get the user with a timeout promise
+    console.log("No session found, attempting to get user directly");
+    
+    const userPromise = new Promise(async (resolve) => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) {
+          console.warn("Error in getUser direct call:", error);
+          resolve(null);
+        } else if (data.user) {
+          console.log("Found user directly:", data.user.id);
+          resolve(data.user as SupabaseUser);
+        } else {
+          console.log("No user found through direct call");
+          resolve(null);
+        }
+      } catch (e) {
+        console.warn("Exception in getUser direct call:", e);
+        resolve(null);
+      }
+    });
+    
+    // Wait for either user data or timeout
+    const timeoutPromise = new Promise(resolve => setTimeout(() => {
+      console.log("getUser timeout reached");
+      resolve(null);
+    }, 3000));
+    
+    // Race the promises
+    const user = await Promise.race([userPromise, timeoutPromise]);
+    return user as SupabaseUser | null;
   } catch (error) {
     console.warn("Error in getUser:", error);
     // Just return null on any error - don't disrupt the app flow

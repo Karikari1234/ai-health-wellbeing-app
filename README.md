@@ -139,6 +139,7 @@ The app uses Supabase Authentication with the following features:
 - Password reset functionality
 - Auth state persistence
 - Protected routes for authenticated users
+- Robust PWA authentication handling with recovery mechanisms
 
 Key files:
 - `app/lib/auth.ts` - Authentication utility functions
@@ -179,6 +180,7 @@ The root component that manages:
 - CRUD operations for weight entries
 - Conditional rendering based on auth state
 - Optimized data handling for charts vs. lists
+- Enhanced PWA state management with recovery options
 
 ### Authentication Form (`app/components/AuthForm.tsx`)
 
@@ -242,6 +244,8 @@ The schema can be found in `app/lib/schema.sql`.
 3. The app stores the session and updates the UI accordingly
 4. Protected data is fetched using the authenticated user's ID
 5. Auth state changes are managed through Supabase's auth listener
+6. Robust recovery mechanisms for handling PWA state persistence issues
+7. Timeout handling to prevent hanging auth checks
 
 ## State Management
 
@@ -249,6 +253,7 @@ The app uses React's useState and useEffect hooks for local state management:
 - User authentication state
 - Weight entries data (both paginated and complete datasets)
 - UI state (active tabs, forms visibility, time periods, etc.)
+- Enhanced loading states for better user experience in PWA contexts
 
 ## Performance Features
 
@@ -271,6 +276,12 @@ The app includes several performance optimizations:
 - Dynamic scaling of chart display based on data density
 - Uses separate optimized dataset for visualization
 
+### PWA Optimization
+- Improved authentication state persistence
+- Better handling of offline/online transitions
+- Retry mechanisms for failed data loads
+- Enhanced error recovery for improved reliability
+
 ## User Experience Improvements
 
 - Floating action button (FAB) for easily adding weight entries from anywhere in the app
@@ -282,6 +293,8 @@ The app includes several performance optimizations:
 - Optimized input fields and buttons for mobile devices
 - Improved 30-day change calculation based on averaging periods for more stable metrics
 - Unique entries per date to maintain data integrity
+- Data loading retry options for handling connectivity issues
+- Clear loading states for better user feedback
 
 ## Common Tasks
 
@@ -314,12 +327,21 @@ The app uses Tailwind CSS for styling:
 - Verify environment variables are set correctly
 - Check browser console for any errors
 - The app includes a "Force Sign Out" button for stuck authentication states
+- For PWA-specific auth issues, use the "Retry Loading Data" button on empty screens
+- If data doesn't appear after first load, try using the retry button or refresh once
 
 ### Database Connection Issues
 
 - Ensure Supabase URL and key are correct in `.env.local`
 - Check if the tables exist in your Supabase project
 - Verify database permissions in Supabase dashboard
+
+### PWA Issues
+
+- If the PWA shows empty data on first load, use the retry button
+- Check browser console for auth-related messages
+- Ensure the device has proper network connectivity
+- Clear PWA storage if persistent issues occur (in browser settings)
 
 ### Performance Issues
 

@@ -31,6 +31,7 @@ export default function DashboardTabs({
   // Load more data when switching to the list tab
   useEffect(() => {
     if (activeTab === "list" && hasMore && !isLoadingMore && onLoadMore) {
+      console.log('Tab switched to list, triggering data load');
       onLoadMore();
     }
   }, [activeTab, hasMore, isLoadingMore, onLoadMore]);

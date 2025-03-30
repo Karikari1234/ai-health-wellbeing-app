@@ -34,6 +34,7 @@ export default function WeightList({
     (entries: IntersectionObserverEntry[]) => {
       const target = entries[0];
       if (target && target.isIntersecting && hasMore && !isLoadingMore && onLoadMore) {
+        console.log('Intersection observed, loading more entries');
         onLoadMore();
       }
     },
@@ -43,13 +44,14 @@ export default function WeightList({
   useEffect(() => {
     const observer = new IntersectionObserver(observerCallback, { 
       threshold: 0.1, 
-      rootMargin: '100px' 
+      rootMargin: '200px' // Increased from 100px to 200px for earlier loading
     });
     
     const currentLoaderRef = loaderRef.current;
     
-    if (currentLoaderRef && hasMore) {
+    if (currentLoaderRef) {
       observer.observe(currentLoaderRef);
+      console.log('Observer set up, hasMore:', hasMore);
     }
     
     return () => {
@@ -57,7 +59,7 @@ export default function WeightList({
         observer.unobserve(currentLoaderRef);
       }
     };
-  }, [observerCallback, hasMore]);
+  }, [observerCallback, hasMore, entries.length]);
 
   const handleDelete = async (id: string) => {
     setDeletingId(id);
@@ -136,18 +138,19 @@ export default function WeightList({
         </div>
       ))}
       
-      {hasMore && (
-        <div 
-          ref={loaderRef} 
-          className="p-4 text-center text-gray-400"
-        >
-          {isLoadingMore ? (
-            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary-500 mx-auto"></div>
-          ) : (
-            <p className="text-sm text-gray-400">Scroll for more entries</p>
-          )}
-        </div>
-      )}
+      {/* Loading indicator or end of list message */}
+      <div 
+        ref={loaderRef} 
+        className="p-4 text-center text-gray-400"
+      >
+        {isLoadingMore ? (
+          <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary-500 mx-auto"></div>
+        ) : hasMore ? (
+          <p className="text-sm text-gray-400">Scroll for more entries</p>
+        ) : (
+          <p className="text-sm text-gray-400">End of entries</p>
+        )}
+      </div>
     </div>
   );
 }

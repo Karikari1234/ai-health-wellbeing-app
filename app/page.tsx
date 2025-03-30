@@ -10,7 +10,7 @@ import {
   updateWeightEntry,
   deleteWeightEntry,
 } from "./lib/db";
-import { WeightEntry, WeightFormData } from "./lib/types";
+import { WeightEntry, WeightFormData, SupabaseUser } from "./lib/types";
 import { supabase } from "./lib/supabase";
 import AuthForm from "./components/AuthForm";
 import Header from "./components/Header";
@@ -23,12 +23,14 @@ import InstallPrompt from "./components/InstallPrompt";
 import FloatingActionButton from "./components/FloatingActionButton";
 
 export default function Home() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authInitialized, setAuthInitialized] = useState(false);
   const [entries, setEntries] = useState<WeightEntry[]>([]);
   const [allEntries, setAllEntries] = useState<WeightEntry[]>([]);
   const [entryToEdit, setEntryToEdit] = useState<WeightEntry | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
   
   // Pagination state
   const [totalEntryCount, setTotalEntryCount] = useState(0);
@@ -49,7 +51,73 @@ export default function Home() {
     }, 100);
   };
 
-  // Check auth status and load data
+  // Function to load user data
+  const loadUserData = async (userId: string) => {
+    console.log("Loading user data for:", userId);
+    setDataLoading(true);
+    try {
+      // Load first page of entries with pagination for the list view
+      const { entries: firstPageEntries, totalCount } = await getPaginatedWeightEntries(
+        userId,
+        1,
+        ENTRIES_PER_PAGE,
+        'desc'
+      );
+      
+      setEntries(firstPageEntries);
+      setTotalEntryCount(totalCount);
+      setCurrentPage(1);
+      
+      // For charts and stats, we need all entries but keep them separate
+      const completeEntries = await getWeightEntries(userId);
+      setAllEntries(completeEntries);
+      
+      console.log(`Loaded ${firstPageEntries.length} paginated entries and ${completeEntries.length} total entries`);
+      return { success: true, entriesCount: completeEntries.length };
+    } catch (error) {
+      console.error("Error fetching entries:", error);
+      return { success: false, error };
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  // Set up auth listener only once
+  useEffect(() => {
+    console.log("Setting up auth listener");
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("Auth state changed:", event);
+        const currentUser = session?.user as SupabaseUser | undefined;
+        
+        // Only proceed if this is an actual state change
+        if ((currentUser && !user) || (!currentUser && user) || 
+            (currentUser && user && currentUser.id !== user.id)) {
+          console.log("User state updated:", currentUser?.id);
+          setUser(currentUser || null);
+          
+          if (currentUser) {
+            // Mark that we're processing an auth state change
+            setAuthInitialized(true);
+            await loadUserData(currentUser.id);
+          } else {
+            setEntries([]);
+            setAllEntries([]);
+            setTotalEntryCount(0);
+          }
+          
+          setLoading(false);
+        }
+      }
+    );
+
+    return () => {
+      console.log("Cleaning up auth listener");
+      authListener?.subscription.unsubscribe();
+    };
+  }, [user]);
+
+  // Initial auth check and data loading
   useEffect(() => {
     // Immediately clear any stuck state in localStorage
     if (typeof window !== 'undefined') {
@@ -72,31 +140,22 @@ export default function Home() {
         // Set a flag that we're checking auth (helps with debugging)
         localStorage.setItem('sb-checking', 'true');
         
-        const currentUser = await getUser();
+        console.log("Checking for existing user session");
+        const currentUser = await getUser() as SupabaseUser | null;
+        
+        // If user already set by auth listener, skip
+        if (authInitialized) {
+          console.log("Auth already initialized by listener, skipping");
+          setLoading(false);
+          return;
+        }
+        
+        console.log("Initial auth check user:", currentUser ? currentUser.id : "no user");
         setUser(currentUser);
 
         if (currentUser) {
-          try {
-            // Load first page of entries with pagination for the list view
-            const { entries: firstPageEntries, totalCount } = await getPaginatedWeightEntries(
-              currentUser.id,
-              1,
-              ENTRIES_PER_PAGE,
-              'desc'
-            );
-            
-            setEntries(firstPageEntries);
-            setTotalEntryCount(totalCount);
-            setCurrentPage(1);
-            
-            // For charts and stats, we need all entries but keep them separate
-            // This happens asynchronously in the background
-            const completeEntries = await getWeightEntries(currentUser.id);
-            setAllEntries(completeEntries);
-            
-          } catch (error) {
-            console.error("Error fetching entries:", error);
-          }
+          const result = await loadUserData(currentUser.id);
+          console.log("Initial data load result:", result);
         }
       } catch (error) {
         console.error("Error checking auth:", error);
@@ -108,75 +167,59 @@ export default function Home() {
     };
 
     // This is critical: we need to guarantee the loading state clears
+    // But extend timeout to 5 seconds to ensure auth has time to complete
     const safetyTimeout = setTimeout(() => {
+      console.log("Safety timeout reached, forcing loading state to false");
       setLoading(false);
-    }, 2000);
+    }, 5000);
 
     checkAuth();
 
-    // Set up Supabase auth listener
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth state changed:", event);
-        const currentUser = session?.user;
-        setUser(currentUser || null);
-
-        if (currentUser) {
-          try {
-            // Load first page of entries with pagination
-            const { entries: firstPageEntries, totalCount } = await getPaginatedWeightEntries(
-              currentUser.id,
-              1,
-              ENTRIES_PER_PAGE,
-              'desc'
-            );
-            
-            setEntries(firstPageEntries);
-            setTotalEntryCount(totalCount);
-            setCurrentPage(1);
-            
-            // For charts and stats, we need all entries separately
-            const completeEntries = await getWeightEntries(currentUser.id);
-            setAllEntries(completeEntries);
-          } catch (error) {
-            console.error("Error fetching entries:", error);
-          }
-        } else {
-          setEntries([]);
-          setAllEntries([]);
-          setTotalEntryCount(0);
-        }
-        
-        setLoading(false);
-      }
-    );
-
     return () => {
       clearTimeout(safetyTimeout);
-      authListener?.subscription.unsubscribe();
     };
-  }, []);
+  }, [authInitialized]);
 
   // Function to load more entries (for infinite scrolling)
   const loadMoreEntries = async () => {
-    if (!user || isLoadingMore || entries.length >= totalEntryCount) return;
+    if (!user || isLoadingMore) return;
+    
+    // Check if we've already loaded all entries
+    if (entries.length >= totalEntryCount) {
+      console.log('All entries loaded, nothing more to fetch');
+      return;
+    }
     
     setIsLoadingMore(true);
     try {
       const nextPage = currentPage + 1;
-      const { entries: newEntries } = await getPaginatedWeightEntries(
+      console.log(`Loading page ${nextPage}, current entries: ${entries.length}, total: ${totalEntryCount}`);
+      
+      const { entries: newEntries, totalCount } = await getPaginatedWeightEntries(
         user.id,
         nextPage,
         ENTRIES_PER_PAGE,
         'desc'
       );
       
+      // Update total count in case it changed
+      setTotalEntryCount(totalCount);
+      
+      // If no new entries returned, we're done
+      if (newEntries.length === 0) {
+        console.log('No new entries returned');
+        return;
+      }
+      
       // Append new entries without duplicates
       const newEntryIds = new Set(newEntries.map(entry => entry.id));
       const existingEntries = entries.filter(entry => !newEntryIds.has(entry.id));
       
-      setEntries([...existingEntries, ...newEntries]);
+      const updatedEntries = [...existingEntries, ...newEntries];
+      setEntries(updatedEntries);
       setCurrentPage(nextPage);
+      
+      console.log(`Updated entries count: ${updatedEntries.length}, still has more: ${updatedEntries.length < totalCount}`);
     } catch (error) {
       console.error("Error loading more entries:", error);
     } finally {
@@ -293,7 +336,6 @@ export default function Home() {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500 mb-4"></div>
           <p className="text-gray-600 font-karla mb-4">Loading your data...</p>
           
-          {/* Only show this after 5 seconds of loading */}
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-500 mb-2">
               Taking too long? Try signing out completely.
@@ -331,10 +373,56 @@ export default function Home() {
     );
   }
 
+  // Data loading check - show a retry button if we have a user but no data
+  const isDataEmpty = user && entries.length === 0 && allEntries.length === 0;
+  
+  if (isDataEmpty && dataLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
+          <Header userEmail={user.email || ""} />
+          
+          <main className="flex-grow">
+            <div className="app-card p-6 mb-6">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500 mb-4 mx-auto"></div>
+                <p className="text-gray-700">Loading your weight data...</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+  
+  if (isDataEmpty && !dataLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
+          <Header userEmail={user.email || ""} />
+          
+          <main className="flex-grow">
+            <div className="app-card p-6 mb-6">
+              <div className="text-center">
+                <p className="text-gray-700 mb-4">We couldn&apos;t load your data. Please try again.</p>
+                <button 
+                  onClick={() => loadUserData(user.id)}
+                  className="app-button"
+                >
+                  Retry Loading Data
+                </button>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
-        <Header userEmail={user.email} />
+        <Header userEmail={user.email || ""} />
 
         <main className="flex-grow">
           {(entries.length > 0 || allEntries.length > 0) ? (
