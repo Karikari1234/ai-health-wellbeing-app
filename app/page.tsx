@@ -42,29 +42,33 @@ export default function Home() {
   const loadUserData = async (userId: string) => {
     console.log("Loading user data for:", userId);
     setDataLoading(true);
+    // Add safety timeout to prevent infinite loading state
+    const dataLoadingTimeout = setTimeout(() => {
+      console.log("Data loading safety timeout reached after 5 seconds");
+      setDataLoading(false);
+    }, 5000);
     try {
       // Load first page of entries with pagination for the list view
-      const { entries: firstPageEntries, totalCount } = await getPaginatedWeightEntries(
-        userId,
-        1,
-        ENTRIES_PER_PAGE,
-        'desc'
-      );
-      
+      const { entries: firstPageEntries, totalCount } =
+        await getPaginatedWeightEntries(userId, 1, ENTRIES_PER_PAGE, "desc");
+
       setEntries(firstPageEntries);
       setTotalEntryCount(totalCount);
       setCurrentPage(1);
-      
+
       // For charts and stats, we need all entries but keep them separate
       const completeEntries = await getWeightEntries(userId);
       setAllEntries(completeEntries);
-      
-      console.log(`Loaded ${firstPageEntries.length} paginated entries and ${completeEntries.length} total entries`);
+
+      console.log(
+        `Loaded ${firstPageEntries.length} paginated entries and ${completeEntries.length} total entries`
+      );
       return { success: true, entriesCount: completeEntries.length };
     } catch (error) {
       console.error("Error fetching entries:", error);
       return { success: false, error };
     } finally {
+      clearTimeout(dataLoadingTimeout); // Clear the timeout if data loads successfully
       setDataLoading(false);
     }
   };

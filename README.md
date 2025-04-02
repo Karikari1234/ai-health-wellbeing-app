@@ -157,8 +157,9 @@ Users can:
 
 Key files:
 - `app/lib/db.ts` - Database operations for weight entries
-- `app/components/WeightForm.tsx` - Form for adding/editing entries
+- `app/components/WeightDrawer.tsx` - Drawer interface for adding/editing entries
 - `app/components/WeightList.tsx` - List view of weight entries with infinite scrolling
+- `app/components/FloatingActionButton.tsx` - Accessible FAB component
 
 ### Data Visualization
 
@@ -190,15 +191,16 @@ Handles:
 - Password reset requests
 - Form validation
 
-### Weight Form (`app/components/WeightForm.tsx`)
+### Weight Drawer (`app/components/WeightDrawer.tsx`)
 
-Form for:
+Enhanced drawer UI for:
 - Adding new weight entries
-- Editing existing entries
+- Editing existing entries from history
+- Smart default weight based on most recent entry
+- Direct input of weights with intelligent validation
 - Date selection via DatePicker
-- Form validation with React Hook Form
 - Detects and shows notification when updating existing entries
-- Auto-scrolls to the form when adding new entries
+- Accessible design with improved touch controls
 
 ### Dashboard Tabs (`app/components/DashboardTabs.tsx`)
 
@@ -284,13 +286,16 @@ The app includes several performance optimizations:
 
 ## User Experience Improvements
 
-- Floating action button (FAB) for easily adding weight entries from anywhere in the app
-- Responsive mobile-friendly design for authentication forms
-- Auto-scrolling to entry form when adding new weights
+- Enhanced bottom drawer interface for adding and editing weights
+- Floating action button (FAB) with improved visual contrast and accessibility
+- Smart weight defaults that use most recent entry as starting point
+- Flexible weight input with direct typing and increment/decrement buttons
+- Edit functionality directly from weight history list
+- Responsive mobile-friendly design for all forms and components
 - Intelligent date handling preventing duplicate entries
-- Visual feedback when updating existing entries
+- Visual feedback with clear notifications when updating existing entries
 - Confirmation dialogs when actions would affect existing data
-- Optimized input fields and buttons for mobile devices
+- Optimized input fields and buttons with improved touch targets for mobile devices
 - Improved 30-day change calculation based on averaging periods for more stable metrics
 - Unique entries per date to maintain data integrity
 - Data loading retry options for handling connectivity issues
