@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
+import { WeightEntry, WeightFormData, SupabaseUser } from "./lib/types";
+import { supabase } from "./lib/supabase";
 import { getUser } from "./lib/auth";
+import { format } from "date-fns";
 import {
   getWeightEntries,
   getPaginatedWeightEntries,
@@ -10,8 +12,8 @@ import {
   updateWeightEntry,
   deleteWeightEntry,
 } from "./lib/db";
-import { WeightEntry, WeightFormData, SupabaseUser } from "./lib/types";
-import { supabase } from "./lib/supabase";
+
+// Components
 import AuthForm from "./components/AuthForm";
 import Header from "./components/Header";
 import DashboardTabs from "./components/DashboardTabs";
@@ -21,14 +23,209 @@ import InstallPrompt from "./components/InstallPrompt";
 import { WeightDrawer } from "./components/WeightDrawer";
 import FloatingActionButton from "./components/FloatingActionButton";
 
+// Component prop interfaces
+interface LoadingScreenProps {
+  onForceSignOut: () => Promise<void>;
+}
+
+interface DataScreenProps {
+  user: SupabaseUser;
+}
+
+interface DataRetryScreenProps extends DataScreenProps {
+  onRetryLoadData: () => Promise<void>;
+}
+
+interface DashboardProps extends DataScreenProps {
+  entries: WeightEntry[];
+  allEntries: WeightEntry[];
+  totalEntryCount: number;
+  isLoadingMore: boolean;
+  onAddEntry: (data: WeightFormData) => Promise<void>;
+  onUpdateEntry: (data: WeightFormData) => Promise<void>;
+  onDeleteEntry: (id: string) => Promise<void>;
+  onEditEntry: (entry: WeightEntry) => void;
+  onLoadMoreEntries: () => Promise<void>;
+  showAddDrawer: boolean;
+  setShowAddDrawer: (show: boolean) => void;
+  showEditDrawer: boolean;
+  setShowEditDrawer: (show: boolean) => void;
+  entryToEdit: WeightEntry | null;
+}
+
+// Component for loading state
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ onForceSignOut }) => (
+  <div className="flex items-center justify-center min-h-screen bg-appBg">
+    <div className="app-card p-8 w-full max-w-md flex flex-col items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500 mb-4"></div>
+      <p className="text-gray-600 font-karla mb-4">Loading your data...</p>
+      
+      <div className="mt-4 text-center">
+        <p className="text-sm text-gray-500 mb-2">
+          Taking too long? Try signing out completely.
+        </p>
+        <button 
+          onClick={onForceSignOut}
+          className="text-primary-500 text-sm hover:text-primary-600 font-medium"
+        >
+          Force Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// Component for login screen
+const LoginScreen: React.FC = () => (
+  <div className="bg-appBg min-h-screen flex items-center justify-center p-4">
+    <div className="max-w-md w-full">
+      <div className="text-center mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 font-merriweather">
+          Weight Tracker
+        </h1>
+        <p className="mt-2 text-gray-600 text-sm sm:text-base">
+          Sign in to track and monitor your weight over time
+        </p>
+      </div>
+
+      <div className="app-card p-5 sm:p-6">
+        <AuthForm />
+      </div>
+    </div>
+  </div>
+);
+
+// Component for data loading screen
+const DataLoadingScreen: React.FC<DataScreenProps> = ({ user }) => (
+  <div className="min-h-screen flex flex-col">
+    <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
+      <Header userEmail={user.email || ""} />
+      
+      <main className="flex-grow">
+        <div className="app-card p-6 mb-6">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500 mb-4 mx-auto"></div>
+            <p className="text-gray-700">Loading your weight data...</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+);
+
+// Component for data retry screen
+const DataRetryScreen: React.FC<DataRetryScreenProps> = ({ user, onRetryLoadData }) => (
+  <div className="min-h-screen flex flex-col">
+    <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
+      <Header userEmail={user.email || ""} />
+      
+      <main className="flex-grow">
+        <div className="app-card p-6 mb-6">
+          <div className="text-center">
+            <p className="text-gray-700 mb-4">We couldn&apos;t load your data. Please try again.</p>
+            <button 
+              onClick={onRetryLoadData}
+              className="app-button"
+            >
+              Retry Loading Data
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+);
+
+// Main dashboard component
+const Dashboard: React.FC<DashboardProps> = ({ 
+  user, 
+  entries,
+  allEntries,
+  totalEntryCount,
+  isLoadingMore,
+  onAddEntry,
+  onUpdateEntry,
+  onDeleteEntry,
+  onEditEntry,
+  onLoadMoreEntries,
+  showAddDrawer,
+  setShowAddDrawer,
+  showEditDrawer,
+  setShowEditDrawer,
+  entryToEdit
+}) => (
+  <div className="min-h-screen flex flex-col">
+    <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
+      <Header userEmail={user.email || ""} />
+
+      <main className="flex-grow">
+        {(entries.length > 0 || allEntries.length > 0) ? (
+          <>
+            <Stats entries={allEntries} />
+            <DashboardTabs
+              entries={entries}
+              allEntries={allEntries} 
+              onDelete={onDeleteEntry}
+              onEdit={onEditEntry}
+              onLoadMore={onLoadMoreEntries}
+              hasMore={entries.length < totalEntryCount}
+              isLoadingMore={isLoadingMore}
+              activeTab="chart" 
+            />
+          </>
+        ) : (
+          <div className="app-card p-6 mb-6">
+            <EmptyState />
+          </div>
+        )}
+        
+        <FloatingActionButton 
+          onClick={() => setShowAddDrawer(true)} 
+          ariaLabel="Add weight entry" 
+        />
+
+        {showAddDrawer && (
+          <WeightDrawer 
+            onSubmit={onAddEntry}
+            entries={allEntries}
+            open={showAddDrawer}
+            setOpen={setShowAddDrawer}
+          />
+        )}
+        
+        {entryToEdit && showEditDrawer && (
+          <WeightDrawer
+            onSubmit={onUpdateEntry}
+            entries={allEntries.filter(entry => entry.id !== entryToEdit.id)}
+            initialData={{
+              weight: entryToEdit.weight,
+              date: new Date(entryToEdit.date)
+            }}
+            isEdit={true}
+            open={showEditDrawer}
+            setOpen={setShowEditDrawer}
+          />
+        )}
+      </main>
+    </div>
+
+    {user && <InstallPrompt />}
+  </div>
+);
+
 export default function Home() {
+  // Authentication state
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
+  
+  // Weight entries state
   const [entries, setEntries] = useState<WeightEntry[]>([]);
   const [allEntries, setAllEntries] = useState<WeightEntry[]>([]);
   const [entryToEdit, setEntryToEdit] = useState<WeightEntry | null>(null);
   const [dataLoading, setDataLoading] = useState(false);
+  
+  // UI state
   const [showEditDrawer, setShowEditDrawer] = useState(false);
   const [showAddDrawer, setShowAddDrawer] = useState(false);
   
@@ -42,11 +239,13 @@ export default function Home() {
   const loadUserData = async (userId: string) => {
     console.log("Loading user data for:", userId);
     setDataLoading(true);
+    
     // Add safety timeout to prevent infinite loading state
     const dataLoadingTimeout = setTimeout(() => {
       console.log("Data loading safety timeout reached after 5 seconds");
       setDataLoading(false);
     }, 5000);
+    
     try {
       // Load first page of entries with pagination for the list view
       const { entries: firstPageEntries, totalCount } =
@@ -68,12 +267,57 @@ export default function Home() {
       console.error("Error fetching entries:", error);
       return { success: false, error };
     } finally {
-      clearTimeout(dataLoadingTimeout); // Clear the timeout if data loads successfully
+      clearTimeout(dataLoadingTimeout);
       setDataLoading(false);
     }
   };
 
-  // Set up auth listener only once
+  // Function to handle "Retry Loading Data" button
+  const handleRetryLoadData = async () => {
+    if (!user) return;
+    
+    setDataLoading(true);
+    
+    // First, try to refresh the session/auth state
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      
+      if (error || !data.session) {
+        console.error("Session refresh failed:", error);
+        // Force sign out since the session is invalid
+        await supabase.auth.signOut();
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.reload();
+        return;
+      }
+      
+      // If we have a valid session, update user state and load data
+      const currentUser = data.session.user as SupabaseUser;
+      setUser(currentUser);
+      
+      // Now load the data with the refreshed session
+      await loadUserData(currentUser.id);
+    } catch (e) {
+      console.error("Error during retry:", e);
+      setDataLoading(false);
+    }
+  };
+
+  // Function to force sign out
+  const handleForceSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "/";
+    } catch (e) {
+      console.error("Error during force sign out:", e);
+      window.location.reload();
+    }
+  };
+  
+  // Set up auth listener
   useEffect(() => {
     console.log("Setting up auth listener");
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -110,13 +354,11 @@ export default function Home() {
 
   // Initial auth check and data loading
   useEffect(() => {
-    // Immediately clear any stuck state in localStorage
+    // Clear any stuck state in localStorage on page reload
     if (typeof window !== 'undefined') {
-      // This checks if the page was reloaded and the loading state might be stuck
       const wasReloaded = performance.navigation && 
                           performance.navigation.type === 1;
       if (wasReloaded) {
-        // Clear any potentially problematic storage items
         try {
           console.log("Page was reloaded, cleaning potential stuck state");
           localStorage.removeItem('sb-stuck');
@@ -128,7 +370,6 @@ export default function Home() {
 
     const checkAuth = async () => {
       try {
-        // Set a flag that we're checking auth (helps with debugging)
         localStorage.setItem('sb-checking', 'true');
         
         console.log("Checking for existing user session");
@@ -151,14 +392,12 @@ export default function Home() {
       } catch (error) {
         console.error("Error checking auth:", error);
       } finally {
-        // Clean up our debugging flag
         localStorage.removeItem('sb-checking');
         setLoading(false);
       }
     };
 
-    // This is critical: we need to guarantee the loading state clears
-    // But extend timeout to 5 seconds to ensure auth has time to complete
+    // Safety timeout to ensure loading state clears
     const safetyTimeout = setTimeout(() => {
       console.log("Safety timeout reached, forcing loading state to false");
       setLoading(false);
@@ -225,7 +464,7 @@ export default function Home() {
     try {
       const formattedDate = format(data.date, "yyyy-MM-dd");
       
-      // Check if there's already an entry with this date in our state
+      // Check if there's already an entry with this date
       const existingEntryIndex = entries.findIndex(
         entry => entry.date === formattedDate
       );
@@ -313,173 +552,44 @@ export default function Home() {
     setShowEditDrawer(true);
   };
 
+  // Determine which component to render based on application state
   if (loading) {
-    // Force sign out function
-    const handleForceSignOut = async () => {
-      // Clear everything
-      try {
-        await supabase.auth.signOut();
-        localStorage.clear();
-        sessionStorage.clear();
-        // Force reload the page
-        window.location.href = "/";
-      } catch (e) {
-        console.error("Error during force sign out:", e);
-        // If even that fails, just reload
-        window.location.reload();
-      }
-    };
-
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-appBg">
-        <div className="app-card p-8 w-full max-w-md flex flex-col items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500 mb-4"></div>
-          <p className="text-gray-600 font-karla mb-4">Loading your data...</p>
-          
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-500 mb-2">
-              Taking too long? Try signing out completely.
-            </p>
-            <button 
-              onClick={handleForceSignOut}
-              className="text-primary-500 text-sm hover:text-primary-600 font-medium"
-            >
-              Force Sign Out
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingScreen onForceSignOut={handleForceSignOut} />;
   }
 
   if (!user) {
-    return (
-      <div className="bg-appBg min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 font-merriweather">
-              Weight Tracker
-            </h1>
-            <p className="mt-2 text-gray-600 text-sm sm:text-base">
-              Sign in to track and monitor your weight over time
-            </p>
-          </div>
-
-          <div className="app-card p-5 sm:p-6">
-            <AuthForm />
-          </div>
-        </div>
-      </div>
-    );
+    return <LoginScreen />;
   }
 
   // Data loading check - show a retry button if we have a user but no data
   const isDataEmpty = user && entries.length === 0 && allEntries.length === 0;
   
   if (isDataEmpty && dataLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
-          <Header userEmail={user.email || ""} />
-          
-          <main className="flex-grow">
-            <div className="app-card p-6 mb-6">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500 mb-4 mx-auto"></div>
-                <p className="text-gray-700">Loading your weight data...</p>
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
-    );
+    return <DataLoadingScreen user={user} />;
   }
   
   if (isDataEmpty && !dataLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
-          <Header userEmail={user.email || ""} />
-          
-          <main className="flex-grow">
-            <div className="app-card p-6 mb-6">
-              <div className="text-center">
-                <p className="text-gray-700 mb-4">We couldn&apos;t load your data. Please try again.</p>
-                <button 
-                  onClick={() => loadUserData(user.id)}
-                  className="app-button"
-                >
-                  Retry Loading Data
-                </button>
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
-    );
+    return <DataRetryScreen user={user} onRetryLoadData={handleRetryLoadData} />;
   }
 
+  // Main dashboard view when data is loaded
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
-        <Header userEmail={user.email || ""} />
-
-        <main className="flex-grow">
-          {(entries.length > 0 || allEntries.length > 0) ? (
-            <>
-              {/* Always use all entries for stats to show accurate data */}
-              <Stats entries={allEntries} />
-              <DashboardTabs
-                entries={entries}
-                allEntries={allEntries} 
-                onDelete={handleDeleteEntry}
-                onEdit={handleEditEntry}
-                onLoadMore={loadMoreEntries}
-                hasMore={entries.length < totalEntryCount}
-                isLoadingMore={isLoadingMore}
-                activeTab="chart" 
-              />
-            </>
-          ) : (
-            <div className="app-card p-6 mb-6">
-              <EmptyState />
-            </div>
-          )}
-          
-          {/* Add Weight button that triggers showing the drawer */}
-          <FloatingActionButton 
-            onClick={() => setShowAddDrawer(true)} 
-            ariaLabel="Add weight entry" 
-          />
-
-          {/* Add weight drawer */}
-          {showAddDrawer && (
-            <WeightDrawer 
-              onSubmit={handleAddEntry}
-              entries={allEntries}
-              open={showAddDrawer}
-              setOpen={setShowAddDrawer}
-            />
-          )}
-          
-          {/* Edit weight drawer */}
-          {entryToEdit && showEditDrawer && (
-            <WeightDrawer
-              onSubmit={handleUpdateEntry}
-              entries={allEntries.filter(entry => entry.id !== entryToEdit.id)}
-              initialData={{
-                weight: entryToEdit.weight,
-                date: new Date(entryToEdit.date)
-              }}
-              isEdit={true}
-              open={showEditDrawer}
-              setOpen={setShowEditDrawer}
-            />
-          )}
-        </main>
-      </div>
-
-      {user && <InstallPrompt />}
-    </div>
+    <Dashboard
+      user={user}
+      entries={entries}
+      allEntries={allEntries}
+      totalEntryCount={totalEntryCount}
+      isLoadingMore={isLoadingMore}
+      onAddEntry={handleAddEntry}
+      onUpdateEntry={handleUpdateEntry}
+      onDeleteEntry={handleDeleteEntry}
+      onEditEntry={handleEditEntry}
+      onLoadMoreEntries={loadMoreEntries}
+      showAddDrawer={showAddDrawer}
+      setShowAddDrawer={setShowAddDrawer}
+      showEditDrawer={showEditDrawer}
+      setShowEditDrawer={setShowEditDrawer}
+      entryToEdit={entryToEdit}
+    />
   );
 }
